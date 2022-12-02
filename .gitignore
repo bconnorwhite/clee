@@ -1,0 +1,4 @@
+.turbo
+/build
+/node_modules
+*.txt

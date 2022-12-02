@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "outDir": "build",
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "rootDirs": [
+      "source"
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ]
+  },
+  "files": [
+    "source/index.ts"
+  ],
+  "ts-node": {
+    "swc": true,
+    "esm": true
+  }
+}

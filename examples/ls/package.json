@@ -1,0 +1,24 @@
+{
+  "name": "ls",
+  "version": "1.0.0",
+  "description": "Simple ls example",
+  "main": "source/index.ts",
+  "author": "Connor White",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ls": "source/index.ts"
+  },
+  "scripts": {
+    "ls": "node --no-warnings --loader ts-node/esm source/index.ts",
+    "lint": "eslint source --ext .ts",
+    "typecheck": "tsc source/**/*.ts --noEmit --esModuleInterop"
+  },
+  "dependencies": {
+    "clee": "link:../../"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}
