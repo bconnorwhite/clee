@@ -28,6 +28,29 @@ _DM me on [Twitter](https://twitter.com/bconnorwhite) if you have questions or s
 
 Clee is a library for creating CLI applications with TypeScript. It is designed to be easy to use, and easy to test. It is also easy to break commands into modules, for reuse as an API or CLI.
 
+## Contents
+- [Why Clee?](#why-clee)  
+- [Installation](#installation)  
+- [Structure](#structure)  
+- [Usage](#usage)  
+  - [Base Settings](#base-settings)
+  - [Arguments](#arguments)
+  - [Options](#options)
+  - [Commands](#commands)
+  - [Other Settings](#other-settings)
+  - [Action](#action)
+  - [Call](#call)
+  - [Run](#run)
+  - [Format](#format)
+  - [Parse](#parse)
+  - [Types](#types)
+- [Examples](#examples)
+  - [ls](/examples/ls/README.md)
+- [Dependencies](#dependencies)
+- [License](#license)
+
+
+
 ## Why Clee?
 
 - TypeScript native
@@ -98,6 +121,23 @@ clee("my-program")
   .description("Description") // Custom description to display on the help screen
 ```
 
+Example help screen:
+```
+                                                                    
+   ____ ___  __  __      ____  _________  ____ __________ _____ ___ 
+  / __ `__ \/ / / /_____/ __ \/ ___/ __ \/ __ `/ ___/ __ `/ __ `__ \
+ / / / / / / /_/ /_____/ /_/ / /  / /_/ / /_/ / /  / /_/ / / / / / /
+/_/ /_/ /_/\__, /     / .___/_/   \____/\__, /_/   \__,_/_/ /_/ /_/ 
+          /____/     /_/               /____/                       
+
+Description
+
+Usage: my-program
+
+Options:
+  -h, --help  Display help for command
+```
+
 ### Arguments
 
 ```ts
@@ -108,14 +148,38 @@ clee("my-program")
   .argument("path", "Description", pathParser) // An argument using a custom parser
 ```
 
+Example help screen:
+```
+Usage: my-program [name] [path]
+
+Arguments:
+  [name]    
+  [path]      Description
+
+Options:
+  -h, --help  Display help for command
+```
+
 ### Options
+
+Options can have both a short and long flag, or a long flag only. They can also have a description, and a custom parser.
 
 ```ts
 import clee, { stringParser } from "clee";
 
 clee("my-program")
   .option("--flag") // An option with no description, using the default boolean parser
-  .argument("-o", "--other", "Description", stringParser) // An option using a custom parser
+  .option("-o", "--other", "Description", stringParser) // An option using a custom parser
+```
+
+Example help screen:
+```
+Usage: my-program [options]
+
+Options:
+      --flag 
+  -o, --other  Description
+  -h, --help   Display help for command
 ```
 
 ### Commands
@@ -126,6 +190,7 @@ clee("my-program")
 
 ### Action
 ### Call
+### Run
 ### Format
 ### Parse
 
@@ -151,17 +216,19 @@ type Result = CommandResult<typeof command>;
 type SubCommands = CommandSubCommands<typeof command>;
 ```
 
+## Examples
+
+- [ls](/examples/ls/README.md)
+
 <br />
 
-<h2>Dependencies<a href="https://www.npmjs.com/package/get-module-pkg?activeTab=dependencies"><img align="right" alt="dependencies" src="https://img.shields.io/hackage-deps/v/clee.svg"></a></h2>
+<h2 id="dependencies">Dependencies<a href="https://www.npmjs.com/package/get-module-pkg?activeTab=dependencies"><img align="right" alt="dependencies" src="https://img.shields.io/hackage-deps/v/clee.svg"></a></h2>
 
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
 - [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 
-<br />
-
-<h2>Dev Dependencies</h2>
+<h3 id="dev-dependencies">Dev Dependencies</h2>
 
 - [@types/node](https://www.npmjs.com/package/@types/node): TypeScript definitions for Node.js
 - [eslint](https://www.npmjs.com/package/eslint): An AST-based pattern checker for JavaScript.
@@ -171,7 +238,7 @@ type SubCommands = CommandSubCommands<typeof command>;
 <br />
 
 
-<h2>License <a href="https://opensource.org/licenses/MIT"><img align="right" alt="license" src="https://img.shields.io/npm/l/clee.svg"></a></h2>
+<h2 id="license">License <a href="https://opensource.org/licenses/MIT"><img align="right" alt="license" src="https://img.shields.io/npm/l/clee.svg"></a></h2>
 
 [MIT](https://opensource.org/licenses/MIT)
 
