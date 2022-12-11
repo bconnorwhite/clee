@@ -41,7 +41,7 @@ describe("argument", () => {
       expect(result).toStrictEqual({ message: "test" });
     });
   });
-  describe("variadic", () => {
+  describe("not variadic", () => {
     const cmd = clee("clee")
       .argument("[first]")
       .argument("[list]", parseStrings)
@@ -51,6 +51,29 @@ describe("argument", () => {
           list
         };
       });
+    test("action", async () => {
+      const result = await cmd.parse(["arg1", "arg2", "arg3"]);
+      expect(result).toStrictEqual({
+        message: `{ first: ${chalk.green("'arg1'")}, list: [ ${chalk.green("'arg2'")} ] }`
+      });
+    });
+  });
+  describe("variadic", () => {
+    const cmd = clee("clee")
+      .argument("[first]")
+      .argument("[list...]", parseStrings)
+      .action((first, list) => {
+        return {
+          first,
+          list
+        };
+      });
+    test("usage", async () => {
+      const result = await cmd.parse(["-h"]);
+      expect(result).toStrictEqual({
+        message: "Usage: clee [first] [list...]\n\nOptions:\n  -h, --help  Display help for command"
+      });
+    });
     test("action", async () => {
       const result = await cmd.parse(["arg1", "arg2", "arg3"]);
       expect(result).toStrictEqual({

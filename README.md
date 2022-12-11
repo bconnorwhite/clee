@@ -140,24 +140,28 @@ Options:
 
 ### Arguments
 
+Arguments can be required or optional, and can have a description and a custom parser.
+
 ```ts
 import clee from "clee";
 
 clee("my-program")
-  .argument("name") // An argument with no description, using the default string parser
-  .argument("path", "Description", pathParser) // An argument using a custom parser
+  .argument("<name>") // An required argument with no description, using the default string parser
+  .argument("[path]", "Description", pathParser) // An optional argument using a custom parser
 ```
 
-Example help screen:
+Required arguments are denoted using square brackets, while optional arguments are denoted using angle brackets.
+
+```ts
+"<required>"
+"[optional]"
 ```
-Usage: my-program [name] [path]
 
-Arguments:
-  [name]    
-  [path]      Description
+Additionally, three dots can be used to denote a variadic argument. However, only the last argument can be variadic:
 
-Options:
-  -h, --help  Display help for command
+```ts
+"<required_variadic...>"
+"[optional_variadic...]"
 ```
 
 ### Options

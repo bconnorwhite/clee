@@ -4,6 +4,7 @@ import {
   getOptionFn, OptionsPropertyFromInput
 } from "./input/index.js";
 import { OptionSkin } from "./input/options/index.js";
+import { HasVariadicArgument, ArgumentsFromInput } from "./input/arguments.js";
 import { getNameFn } from "./name.js";
 import { getTitleFn } from "./title.js";
 import { getDescriptionFn } from "./description.js";
@@ -40,7 +41,7 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
    * Required - "\<parameter\>"  
    * Optional - "[parameter]"  
    */
-  argument: ReturnType<typeof getArgumentFn<N, I, R, S>>;
+  argument: HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
   arguments: () => ArgumentsPropertyFromInput<I>;
   option: ReturnType<typeof getOptionFn<N, I, R, S, false>>;
   options: () => OptionsPropertyFromInput<I>;
@@ -105,7 +106,9 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
   command.description = getDescriptionFn(properties);
   // Input types
   command.command = getCommandFn(properties);
-  command.argument = getArgumentFn(properties);
+  command.argument = (
+    properties.arguments[properties.arguments.length-1]?.variadic ? undefined : getArgumentFn(properties)
+  ) as HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
   Object.defineProperty(command, "arguments", { value: () => properties.arguments, writable: true }); // This is super hacky but I'm gonna leave it until something breaks
   command.option = getOptionFn(properties, false);
   command.options = () => properties.options;

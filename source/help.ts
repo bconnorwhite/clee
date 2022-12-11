@@ -3,12 +3,12 @@ import { Input } from "./input/index.js";
 import { Option } from "./input/options/index.js";
 import { ShortFlag, LongFlag } from "./parse/index.js";
 
-function wrapOptionalParameter(parameter: string) {
-  return `[${parameter}]`;
+function wrapOptionalParameter(parameter: string, variadic: boolean) {
+  return `[${parameter}${variadic ? "..." : ""}]`;
 }
 
-export function wrapRequiredParameter(parameter: string) {
-  return `<${parameter}>`;
+export function wrapRequiredParameter(parameter: string, variadic: boolean) {
+  return `<${parameter}${variadic ? "..." : ""}>`;
 }
 
 function rightPad(string = "", length: number) {
@@ -19,8 +19,8 @@ function leftPad(string = "", length: number) {
   return string ? string.padStart(string.length + length, " ") : "";
 }
 
-function wrapParameter(parameter: string, required: boolean) {
-  return required ? wrapRequiredParameter(parameter) : wrapOptionalParameter(parameter);
+function wrapParameter(parameter: string, required: boolean, variadic: boolean) {
+  return required ? wrapRequiredParameter(parameter, variadic) : wrapOptionalParameter(parameter, variadic);
 }
 
 function getTitle<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
@@ -32,17 +32,17 @@ function getDescription<N extends string, I extends Input, R, S extends Commands
 }
 
 function getUsage<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
-  const optionParameter = properties.options ? ` ${wrapOptionalParameter("options")}` : "";
-  const commandParameter = Object.keys(properties.commands ?? {}).length > 0 ? ` ${wrapOptionalParameter("command")}` : "";
-  return properties.arguments.reduce((retval, { name, required }) => {
-    return `${retval} ${wrapParameter(name, required)}`;
+  const optionParameter = properties.options ? ` ${wrapOptionalParameter("options", false)}` : "";
+  const commandParameter = Object.keys(properties.commands ?? {}).length > 0 ? ` ${wrapOptionalParameter("command", false)}` : "";
+  return properties.arguments.reduce((retval, { name, required, variadic }) => {
+    return `${retval} ${wrapParameter(name, required, variadic)}`;
   }, `Usage: ${properties.name}${optionParameter}${commandParameter}`);
 }
 
 function getParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
   const argsHaveDescription = properties.arguments.some(({ description }) => description !== undefined);
-  const argumentParameters = argsHaveDescription ? properties.arguments.map(({ name, required, description }) => {
-    return [`  ${wrapParameter(name, required)}`, description ?? ""] as const;
+  const argumentParameters = argsHaveDescription ? properties.arguments.map(({ name, required, variadic, description }) => {
+    return [`  ${wrapParameter(name, required, variadic)}`, description ?? ""] as const;
   }) : [];
   const options = Object.values<Option<LongFlag, unknown>>(properties.options ?? {});
   if(properties.version.version !== undefined && (properties.version.shortFlag || properties.version.longFlag)) {
@@ -57,9 +57,9 @@ function getParameters<N extends string, I extends Input, R, S extends Commands>
     return [`  ${shortFlag}${separator}${leftPad(option.longFlag, 1)}`, option.description ?? ""] as const;
   });
   const commandParameters = (Object.values(properties.commands ?? {}) as Command[]).map((command) => {
-    const subOptionParameter = command.options() ? ` ${wrapOptionalParameter("options")}` : "";
-    const subArgumentParameters = command.arguments().reduce((argRetval, { name, required }) => {
-      return `${argRetval} ${wrapParameter(name, required)}`;
+    const subOptionParameter = command.options() ? ` ${wrapOptionalParameter("options", false)}` : "";
+    const subArgumentParameters = command.arguments().reduce((argRetval, { name, required, variadic }) => {
+      return `${argRetval} ${wrapParameter(name, required, variadic)}`;
     }, "");
     return [`  ${command.name()}${subOptionParameter}${subArgumentParameters}`, command.description() ?? ""] as const;
   });

@@ -98,10 +98,11 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
 ): I {
   const { args, options } = collectArgs(input, properties);
   const parsedArgs = properties.arguments.map((argument, index) => {
-    const isLast: boolean = index === properties.arguments.length-1;
-    const value = args.slice(index, isLast ? undefined : index + 1);
+    const isLast: boolean = (index === properties.arguments.length-1);
+    const isVariadic = isLast && argument.variadic;
+    const value = args.slice(index, isVariadic ? undefined : index + 1);
     if(value[0] !== undefined) {
-      return argument.parser ? argument.parser(...value) : (isLast ? value : value[0]);
+      return argument.parser(...value);
     } else {
       if(argument.required) {
         throw new Error(`Argument "${wrapRequiredParameter(argument.name)}" is required.`);
