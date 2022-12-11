@@ -14,17 +14,9 @@ export type Parsable<V=unknown> = {
   parser: Parser<V>;
 };
 
-function toVariadic<T>(fn: (input: string) => T): (...input: string[]) => T[] {
-  return (...input: string[]) => {
-    return input.map((value) => fn(value));
-  };
-}
-
 export function parseString(string: string): string {
   return string;
 }
-
-export const parseStrings = toVariadic(parseString);
 
 /**
  * Parse a boolean from a string.  
@@ -48,8 +40,6 @@ export function parseBoolean(input: string): boolean {
   }
 }
 
-export const parseBooleans = toVariadic(parseBoolean);
-
 export function parseNumber(string: string): number {
   const number = Number(string);
   if(Number.isNaN(number)) {
@@ -58,8 +48,6 @@ export function parseNumber(string: string): number {
     return number;
   }
 }
-
-export const parseNumbers = toVariadic(parseNumber);
 
 export function parseInt(string: string): number {
   const int = Number.parseInt(string);
@@ -70,8 +58,6 @@ export function parseInt(string: string): number {
   }
 }
 
-export const parseInts = toVariadic(parseInt);
-
 export function parseFloat(string: string): number {
   const float = Number.parseFloat(string);
   if(Number.isNaN(float)) {
@@ -81,8 +67,6 @@ export function parseFloat(string: string): number {
   }
 }
 
-export const parseFloats = toVariadic(parseFloat);
-
 export function parseJSON(string: string): number {
   try {
     return JSON.parse(string);
@@ -90,8 +74,6 @@ export function parseJSON(string: string): number {
     throw new Error("Unable to parse JSON.");
   }
 }
-
-export const parseJSONs = toVariadic(parseJSON);
 
 /**
  * Parse a date from a string.
@@ -111,8 +93,6 @@ export function parseDate(string: string): Date {
   }
 }
 
-export const parseDates = toVariadic(parseDate);
-
 /**
  * Parse a URL from a string.
  * Valid input formats include any valid input to `new URL()`.
@@ -124,8 +104,6 @@ export function parseURL(string: string): URL {
     throw new Error("Unable to parse URL.");
   }
 }
-
-export const parseURLs = toVariadic(parseURL);
 
 export type Path = {
   [K in "absolute" | "relative" | keyof path.ParsedPath]: K extends keyof path.ParsedPath ? path.ParsedPath[K] : string;
@@ -151,18 +129,12 @@ export function parsePath(string: string): Path {
   };
 }
 
-export const parsePaths = toVariadic(parsePath);
-
 export function parseFile(string: string): Promise<Buffer> {
   const { absolute } = parsePath(string);
   return fs.readFile(absolute);
 }
 
-export const parseFiles = toVariadic(parseFile);
-
 export function parseDirectory(string: string): Promise<Dirent[]> {
   const { absolute } = parsePath(string);
   return fs.readdir(absolute, { withFileTypes: true });
 }
-
-export const parseDirectories = toVariadic(parseDirectory);

@@ -1,7 +1,7 @@
 import { CommandProperties, getCommand, Command, Commands } from "../command.js";
 import { Action } from "../action.js";
 import { Formatter } from "../format";
-import { Parsable, Parser, parseString, parseStrings } from "../parse/index.js";
+import { Parsable, Parser, parseString } from "../parse/index.js";
 import { Input, Parameter, isRequired, isVariadic, getParameterName, RequiredParameter, VariadicParameter } from "./index.js";
 import { Options, OptionsPropertyFromInput, OptionsFromInput } from "./options/index.js";
 
@@ -60,37 +60,41 @@ type ReplaceArgsInInput<I extends Input, A extends Arguments> = OptionsFromInput
   ? A
   : [...A, OptionsFromInput<I>];
 
-export function getArgumentFn<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>
-) {
-  function argumentFn<P extends Parameter, V=P extends VariadicParameter ? string[] : string>(
+export function getArgumentFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
+  function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     parser?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R, S>;
-  function argumentFn<P extends Parameter, V=P extends VariadicParameter ? string[] : string>(
+  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     description: string | undefined,
     parser?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R, S>;
-  function argumentFn<P extends Parameter, V=P extends VariadicParameter ? string[] : string>(
+  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     b: string | undefined | Parser<V>,
     c?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R, S> {
+  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S> {
     const variadic = isVariadic(parameter);
     const argument: Argument<V> = {
       name: getParameterName(parameter),
       required: isRequired(parameter),
       variadic,
       description: typeof b === "string" ? b : undefined,
-      parser: (typeof b === "function" ? b : c) ?? (variadic ? parseStrings : parseString) as Parser<V>
+      parser: (typeof b === "function" ? b : c) ?? parseString as Parser<V>
     };
-    return getCommand<N, MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R, S>({
+    return getCommand<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R>,
-      format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>>>,
-      arguments: [...properties.arguments, argument] as unknown as ArgumentsPropertyFromInput<MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>>,
-      options: properties.options as unknown as OptionsPropertyFromInput<MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>>
+      action: properties.action as unknown as Action<
+        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>,
+        R>,
+      format: properties.format as unknown as Formatter<
+        R,
+        OptionsPropertyFromInput<MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>>,
+      arguments: [...properties.arguments, argument] as unknown as ArgumentsPropertyFromInput<
+        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+      options: properties.options as unknown as OptionsPropertyFromInput<
+        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>
     });
   }
   return argumentFn;

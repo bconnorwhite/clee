@@ -1,10 +1,9 @@
 /* eslint-disable max-depth */
-import { parseBoolean } from "../index.js";
 import { Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
 import { Option, OptionsPropertyFromInput } from "../input/options/index.js";
 import { toCamelCase } from "../input/options/casing.js";
-import { Flag, isFlag, LongFlag, isInverseFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
+import { Flag, isFlag, LongFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
 import { hasHelpFlag, getHelp } from "../help.js";
 import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
 
@@ -110,7 +109,7 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
     const isVariadic = isLast && argument.variadic;
     const value = args.slice(index, isVariadic ? undefined : index + 1);
     if(value[0] !== undefined) {
-      return argument.parser(...value);
+      return isVariadic ? value.map((item) => argument.parser(item)) : argument.parser(value[0]);
     } else {
       if(argument.required) {
         throw new Error(`Argument "${wrapParameter(argument.name, true, argument.variadic)}" is required.`);
@@ -119,16 +118,9 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
     }
   });
   const parsedOptions = getOptionEntries(properties).reduce((retval, [fieldName, option]) => {
-    const array = options[fieldName];
-    if(array !== undefined && array.length > 0) {
-      if(option.parser === undefined) {
-        // No parser, value should be returned as a boolean.
-        const firstValue = array[0] as string;
-        retval[fieldName] = isInverseFlag(option.longFlag) ? !parseBoolean(firstValue) : parseBoolean(firstValue);
-      } else {
-        // Parser exists, value should be returned as the result of the parser.
-        retval[fieldName] = option.parser(...array);
-      }
+    const value = options[fieldName];
+    if(value !== undefined && (typeof value === "string" || value.length > 0)) {
+      retval[fieldName] = Array.isArray(value) ? value.map((item) => option.parser(item)) : option.parser(value);
     } else if(option.required) {
       throw new Error(`Option "${option.longFlag}" must specify a value.`);
     }

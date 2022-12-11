@@ -1,7 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
 import clee, { parseString } from "../source";
-import { parseStrings } from "../source/parse";
 
 describe("argument", () => {
   describe("default parser", () => {
@@ -44,7 +43,7 @@ describe("argument", () => {
   describe("not variadic", () => {
     const cmd = clee("clee")
       .argument("[first]")
-      .argument("[list]", parseStrings)
+      .argument("[list]")
       .action((first, list) => {
         return {
           first,
@@ -54,14 +53,14 @@ describe("argument", () => {
     test("action", async () => {
       const result = await cmd.parse(["arg1", "arg2", "arg3"]);
       expect(result).toStrictEqual({
-        message: `{ first: ${chalk.green("'arg1'")}, list: [ ${chalk.green("'arg2'")} ] }`
+        message: `{ first: ${chalk.green("'arg1'")}, list: ${chalk.green("'arg2'")} }`
       });
     });
   });
   describe("variadic", () => {
     const cmd = clee("clee")
       .argument("[first]")
-      .argument("[list...]", parseStrings)
+      .argument("[list...]", parseString)
       .action((first, list) => {
         return {
           first,
@@ -93,7 +92,7 @@ describe("requiredArgument", () => {
       });
     });
     test("is required", async () => {
-      const result = await cmd.parse([])
+      const result = await cmd.parse([]);
       expect(result).toStrictEqual(new Error("Argument \"<name>\" is required."));
     });
   });

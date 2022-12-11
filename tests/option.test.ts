@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
 import clee, { parseBoolean } from "../source";
-import { parseInts } from "../source/parse/parser";
+import { parseInt } from "../source/parse/parser";
 
 describe("option", () => {
   describe("boolean", () => {
@@ -23,7 +23,7 @@ describe("option", () => {
   });
   describe("variadic", () => {
     const cmd = clee("clee")
-      .option("-f", "--flag", "Description", parseInts)
+      .option("-f", "--flag", "Description", parseInt)
       .action((options) => {
         return options.flag;
       });

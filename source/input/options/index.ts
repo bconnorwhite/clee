@@ -1,7 +1,7 @@
 import { CommandProperties, getCommand, Command, Commands } from "../../command.js";
 import { Action } from "../../action.js";
 import { Formatter } from "../../format";
-import { Parser, Parsable, ShortFlag, LongFlag, parseBooleans, parseBoolean } from "../../parse/index.js";
+import { Parser, Parsable, ShortFlag, LongFlag, parseBoolean } from "../../parse/index.js";
 import { Input, Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getParameterName, VariadicParameter } from "../index.js";
 import { ArgumentsFromInput, ArgumentsPropertyFromInput } from "../arguments.js";
 import { LongFlagToCamelCase, longFlagToCamelCase } from "./casing.js";
@@ -85,12 +85,12 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
   function optionFn<L extends LongFlag, V=boolean>(
     longFlag: L, parser?: Parser<V>
   ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=P extends VariadicParameter ? boolean[] : boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=P extends VariadicParameter ? boolean[] : boolean>(
+  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, V=boolean>(
     longFlag: L, description: string | undefined, parser?: Parser<V>
   ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
@@ -98,35 +98,37 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
   function optionFn<L extends LongFlag, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parser?: Parser<V>
   ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=P extends VariadicParameter ? boolean[] : boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=P extends VariadicParameter ? boolean[] : boolean>(
+  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, description: string | undefined, parser?: Parser<V>
   ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
   // Function Implementation
-  function optionFn<L extends LongFlag, P extends Parameter, V=P extends VariadicParameter ? boolean[] : boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     a: ShortFlag | L,
     b: L | P | string | undefined | Parser<V>,
     c?: P | string | undefined | Parser<V>,
     d?: string | undefined | Parser<V>,
     e?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S> {
+  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S> {
     const stack = [a, b, c, d, e];
     const shortFlag = (isShortFlag(stack[0]) ? stack.shift() : undefined) as ShortFlag | undefined;
     const longFlag = stack.shift() as L;
     const parameter = (isParameter(stack[0]) ? stack.shift() : undefined) as P | undefined;
     const description = (typeof stack[0] === "string" ? stack.shift() : undefined) as string | undefined;
-    const variadic = isVariadic(parameter);
-    const parser = (isFunction(stack[0]) ? stack.shift() : (variadic ? parseBooleans : parseBoolean)) as Parser<V>;
-    return getCommand<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>({
+    const parser = (isFunction(stack[0]) ? stack.shift() : parseBoolean) as Parser<V>;
+    return getCommand<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R>,
-      format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>>>,
-      arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>>,
+      action: properties.action as unknown as Action<MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>, R>,
+      format: properties.format as unknown as Formatter<
+        R,
+        OptionsPropertyFromInput<MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>>>,
+      arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<
+        MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>>,
       options: {
         ...(properties.options ?? {}),
         [longFlagToCamelCase(longFlag)]: {
@@ -138,7 +140,8 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
           name: parameter ? getParameterName(parameter) : undefined,
           parser
         }
-      } as unknown as OptionsPropertyFromInput<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>>,
+      } as unknown as OptionsPropertyFromInput<
+        MergeOptionsToInput<I, L, P extends VariadicParameter ? boolean[] : boolean, P extends RequiredParameter ? true : false>>,
       help: {
         shortFlag: properties.help.shortFlag === shortFlag ? undefined : properties.help.shortFlag,
         longFlag: properties.help.longFlag === longFlag ? undefined : properties.help.longFlag,

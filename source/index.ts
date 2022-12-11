@@ -33,27 +33,16 @@ export type {
 export type { Option, Argument } from "./input";
 export {
   parseString,
-  parseStrings,
   parseBoolean,
-  parseBooleans,
   parseNumber,
-  parseNumbers,
   parseInt,
-  parseInts,
   parseFloat,
-  parseFloats,
   parseJSON,
-  parseJSONs,
   parseDate,
-  parseDates,
   parseURL,
-  parseURLs,
   parsePath,
-  parsePaths,
   parseFile,
-  parseFiles,
-  parseDirectory,
-  parseDirectories
+  parseDirectory
 } from "./parse/index.js";
 export {
   formatDefault,

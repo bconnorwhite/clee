@@ -11,7 +11,7 @@ export type Action<I extends Input=[], R=void> = (...input: I) => R;
  * Generates a function for getting and setting a Command's action.
  */
 export function getActionFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
-  function actionFn<R2, A extends Action<I, R2> | undefined = undefined>(
+  function actionFn<R2, A extends Action<I, R2> | undefined>(
     action?: A
   ): A extends undefined ? Action<I, R> : Command<N, I, R2, S> {
     if(action === undefined) {
