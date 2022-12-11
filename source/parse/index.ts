@@ -10,11 +10,11 @@ import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js
 /**
  * Program output in the case that the help or version flags are used.
  */
-type ParseOutput = {
+export type ParseOutput = {
   message: string | undefined;
 };
 
-type ParseError = Error;
+export type ParseError = Error;
 
 /**
  * If the command was run successfully, returns the resulting value.  
