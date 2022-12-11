@@ -3,7 +3,7 @@ import clee, { parseDirectory } from "clee";
 clee("ls")
   .title({ font: "Slant" })
   .description("List directory contents")
-  .argument("path", "The path to the directory to list.", parseDirectory)
+  .argument("[path]", "The path to the directory to list.", parseDirectory)
   .option("-a", "--all", "Include directory entries whose names begin with a dot.")
   .option("-l", "--long", "List files in the long format.")
   .option("-r", "--reverse", "Reverse the order of the sort.")

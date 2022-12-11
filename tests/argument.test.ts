@@ -5,7 +5,7 @@ import { parseStrings } from "../source/parse";
 
 describe("argument", () => {
   describe("default parser", () => {
-    const cmd = clee("clee").argument("name", "Name");
+    const cmd = clee("clee").argument("[name]", "Name");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -18,7 +18,7 @@ describe("argument", () => {
     });
   });
   describe("string parser", () => {
-    const cmd = clee("clee").argument("name", "Name", parseString).action((arg) => {
+    const cmd = clee("clee").argument("[name]", "Name", parseString).action((arg) => {
       return arg;
     });
     test("action", async () => {
@@ -27,7 +27,7 @@ describe("argument", () => {
     });
   });
   describe("string parser no description", () => {
-    const cmd = clee("clee").argument("name", parseString).action((arg) => {
+    const cmd = clee("clee").argument("[name]", parseString).action((arg) => {
       return arg;
     });
     test("usage", async () => {
@@ -43,8 +43,8 @@ describe("argument", () => {
   });
   describe("variadic", () => {
     const cmd = clee("clee")
-      .argument("first")
-      .argument("list", parseStrings)
+      .argument("[first]")
+      .argument("[list]", parseStrings)
       .action((first, list) => {
         return {
           first,
@@ -62,7 +62,7 @@ describe("argument", () => {
 
 describe("requiredArgument", () => {
   describe("without description", () => {
-    const cmd = clee("clee").requiredArgument("name");
+    const cmd = clee("clee").argument("<name>");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -75,7 +75,7 @@ describe("requiredArgument", () => {
     });
   });
   describe("with description", () => {
-    const cmd = clee("clee").requiredArgument("name", "Description");
+    const cmd = clee("clee").argument("<name>", "Description");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({

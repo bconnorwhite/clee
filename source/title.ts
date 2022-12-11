@@ -6,7 +6,6 @@ export function getTitleFn<N extends string, I extends Input, R, S extends Comma
   return (options: FigletOptions): Command<N, I, R, S> => {
     return getCommand({
       ...properties,
-      // eslint-disable-next-line no-sync
       title: figlet.textSync(properties.name, options)
     });
   };

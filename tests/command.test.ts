@@ -3,7 +3,7 @@ import clee, { parseBoolean, parseString } from "../source";
 
 describe("subcommand", () => {
   const sub = clee("sub")
-    .argument("arg1", parseBoolean)
+    .argument("[arg1]", parseBoolean)
     .action((arg1) => {
       return arg1;
     })
@@ -11,7 +11,7 @@ describe("subcommand", () => {
       return result ? "SubTrue" : "SubFalse";
     });
   const cmd = clee("clee")
-    .argument("arg1", parseString)
+    .argument("[arg1]", parseString)
     .command(sub)
     .action((arg1) => {
       return arg1;

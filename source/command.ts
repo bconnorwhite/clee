@@ -9,6 +9,7 @@ import { getTitleFn } from "./title.js";
 import { getDescriptionFn } from "./description.js";
 import { getActionFn, Action } from "./action.js";
 import { Formatter, getFormatFn } from "./format.js";
+import { getRunFn } from "./run.js";
 import { getParseFn } from "./parse/index.js";
 import { getHelpFn } from "./help.js";
 import { getVersionFn } from "./version.js";
@@ -34,9 +35,13 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
   description: ReturnType<typeof getDescriptionFn<N, I, R, S>>;
   // Input types
   command: ReturnType<typeof getCommandFn<N, I, R, S>>;
-  argument: ReturnType<typeof getArgumentFn<N, I, R, S, false>>;
+  /**
+   * Create a new argument.  
+   * Required - "\<parameter\>"  
+   * Optional - "[parameter]"  
+   */
+  argument: ReturnType<typeof getArgumentFn<N, I, R, S>>;
   arguments: () => ArgumentsPropertyFromInput<I>;
-  requiredArgument: ReturnType<typeof getArgumentFn<N, I, R, S, true>>;
   option: ReturnType<typeof getOptionFn<N, I, R, S, false>>;
   options: () => OptionsPropertyFromInput<I>;
   requiredOption: ReturnType<typeof getOptionFn<N, I, R, S, true>>;
@@ -45,12 +50,9 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
   version: ReturnType<typeof getVersionFn<N, I, R, S>>;
   // Calling the command
   action: ReturnType<typeof getActionFn<N, I, R, S>>;
+  run: ReturnType<typeof getRunFn<N, I, R, S>>;
   format: ReturnType<typeof getFormatFn<N, I, R, S>>;
   parse: ReturnType<typeof getParseFn<N, I, R, S>>;
-  run: <SN extends (keyof S & string)>(
-    subcommand: SN,
-    ...args: S[SN] extends AnyFunction ? Parameters<S[SN]> : never
-  ) => S[SN] extends AnyFunction ? ReturnType<S[SN]> : never;
 }
 
 /**
@@ -93,8 +95,6 @@ export function getCommandFn<N extends string, I extends Input, R, S extends Com
   };
 }
 
-type AnyFunction = (...args: any[]) => any;
-
 export function getCommand<N extends string, I extends Input=[], R=void, S extends Commands=Record<string, never>>(
   properties: CommandProperties<N, I, R, S>
 ): Command<N, I, R, S> {
@@ -105,9 +105,8 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
   command.description = getDescriptionFn(properties);
   // Input types
   command.command = getCommandFn(properties);
-  command.argument = getArgumentFn(properties, false);
+  command.argument = getArgumentFn(properties);
   Object.defineProperty(command, "arguments", { value: () => properties.arguments, writable: true }); // This is super hacky but I'm gonna leave it until something breaks
-  command.requiredArgument = getArgumentFn(properties, true);
   command.option = getOptionFn(properties, false);
   command.options = () => properties.options;
   command.requiredOption = getOptionFn(properties, true);
@@ -118,18 +117,7 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
   command.action = getActionFn(properties);
   command.format = getFormatFn(properties);
   command.parse = getParseFn(properties);
-  command.run = <SN extends (keyof S & string)>(
-    subcommand: SN,
-    ...args: S[SN] extends AnyFunction ? Parameters<S[SN]> : never
-  ): S[SN] extends AnyFunction ? ReturnType<S[SN]> : never => {
-    if(properties.commands !== undefined) {
-      const fn = properties.commands[subcommand];
-      if(typeof fn === "function") {
-        return fn(...args);
-      }
-    }
-    throw new Error(`Command ${command} not found`);
-  };
+  command.run = getRunFn(properties);
   return command;
 }
 

@@ -4,8 +4,8 @@ import clee from "../source";
 
 describe("mixed", () => {
   const cmd = clee("clee")
-    .requiredArgument("arg1", "Description")
-    .argument("argument2", "Description")
+    .argument("<arg1>", "Description")
+    .argument("[argument2]", "Description")
     .requiredOption("-o", "--option1", "Description")
     .option("-p", "--opt2", "Description")
     .action((arg1, arg2, options) => {
