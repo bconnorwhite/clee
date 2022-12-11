@@ -23,6 +23,7 @@ export default function clee<N extends string>(name: N): Command<N> {
 }
 
 export type {
+  Command,
   CommandName,
   CommandInput,
   CommandArguments,
@@ -52,5 +53,3 @@ export {
   formatJSONPretty,
   formatStringsToLines
 } from "./format.js";
-export { logger, log } from "./logger.js";
-export type { LoggerOptions, Logger } from "./logger";
