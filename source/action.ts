@@ -11,17 +11,18 @@ export type Action<I extends Input=[], R=void> = (...input: I) => R;
  * Generates a function for getting and setting a Command's action.
  */
 export function getActionFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
-  function actionFn<R2, A extends Action<I, R2> | undefined>(
-    action?: A
-  ): A extends undefined ? Action<I, R> : Command<N, I, R2, S> {
+  function actionFn<A extends [Action<I>] | []>(
+    ...args: A
+  ): A extends [Action<I, infer R2>] ? Command<N, I, R2, S> : Action<I, R> {
+    const action = args[0];
     if(action === undefined) {
-      return properties.action.bind({}) as A extends undefined ? Action<I, R> : Command<N, I, R2, S>;
+      return properties.action.bind({}) as A extends [Action<I, infer R2>] ? Command<N, I, R2, S> : Action<I, R>;
     } else {
       return getCommand({
         ...properties,
         action: action.bind({}),
-        format: properties.format as unknown as Formatter<R2, OptionsPropertyFromInput<I>>
-      }) as A extends undefined ? Action<I, R> : Command<N, I, R2, S>;
+        format: properties.format as unknown as A extends Action<I, infer R2> ? Formatter<R2, OptionsPropertyFromInput<I>> : never
+      }) as A extends [Action<I, infer R2>] ? Command<N, I, R2, S> : Action<I, R>;
     }
   }
   return actionFn;

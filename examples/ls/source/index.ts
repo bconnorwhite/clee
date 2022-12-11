@@ -1,4 +1,5 @@
 import clee, { parseDirectory } from "clee";
+import { Dirent } from "fs";
 
 clee("ls")
   .title({ font: "Slant" })
@@ -7,8 +8,9 @@ clee("ls")
   .option("-a", "--all", "Include directory entries whose names begin with a dot.")
   .option("-l", "--long", "List files in the long format.")
   .option("-r", "--reverse", "Reverse the order of the sort.")
+  .option("-s", "--silent", "Suppress normal output.")
   .version(import.meta.url)
-  .action(async (path, options) => {
+  .action(async (path, options): Promise<Dirent[]> => {
     const directory = path ? await path : await parseDirectory(process.cwd());
     if(options.reverse) {
       directory.reverse();
@@ -19,7 +21,7 @@ clee("ls")
       return directory.filter((item) => !item.name.startsWith("."));
     }
   })
-  .format(async (result, options) => {
+  .format(async (result: Promise<Dirent[]>, options) => {
     const entries = await result;
     const maxLength = entries.reduce((retval, item) => {
       return Math.max(retval, item.name.length);
@@ -33,5 +35,5 @@ clee("ls")
         return `${retval}${item.name.padEnd(maxLength + 1)}`;
       }, "");
     }
-  })
+  }, "silent")
   .parse();
