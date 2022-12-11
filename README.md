@@ -173,7 +173,28 @@ import clee, { stringParser } from "clee";
 
 clee("my-program")
   .option("--flag") // An option with no description, using the default boolean parser
+  .option("--required", "<value>") // A required option
+  .option("--header", "[value...]") // An optional variadic option
   .option("-o", "--other", "Description", stringParser) // An option using a custom parser
+```
+
+#### Option Values
+Values can be provided to options with either a space or an equals sign.
+
+```
+--flag value
+--flag=value
+```
+##### Compound Flags
+Additionally, compound flags can be used to group multiple short flags together:
+```
+-abc
+```
+##### Variadic Options
+Variadic options can be provided by listing multiple values, or by repeating the flag multiple times:
+```
+--header value1 value2
+--header value1 --header value2
 ```
 
 ### Commands

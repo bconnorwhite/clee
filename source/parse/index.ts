@@ -1,3 +1,4 @@
+/* eslint-disable max-depth */
 import { parseBoolean } from "../index.js";
 import { Input } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
@@ -45,7 +46,7 @@ function collectArgs<N extends string, I extends Input, R, S extends Commands>(
   properties: CommandProperties<N, I, R, S>
 ) {
   const args: string[] = [];
-  const options: Record<string, string[]> = {};
+  const options: Record<string, string | string[]> = {};
   for(let index=0; index<input.length; index+=1) {
     const arg = input[index] as string;
     if(isFlag(arg)) {
@@ -53,32 +54,39 @@ function collectArgs<N extends string, I extends Input, R, S extends Commands>(
       if(isCompoundFlag(arg)) {
         flag.name.split("").forEach((char) => {
           if(isLetter(char)) {
-            const [fieldName] = getOptionEntry(getShortFlag(char), properties) ?? [toCamelCase(char), {}];
-            if(options[fieldName] === undefined) {
-              options[fieldName] = [];
+            const [fieldName, option] = getOptionEntry(getShortFlag(char), properties) ?? [toCamelCase(char), {}];
+            if(option.variadic) {
+              if(options[fieldName] === undefined) {
+                options[fieldName] = [];
+              }
+              const array = options[fieldName] as string[];
+              array.push(flag.body ?? "true");
+            } else {
+              options[fieldName] = "true";
             }
-            const array = options[fieldName] as string[];
-            array.push(flag.body ?? "true");
           }
         });
       } else {
-        const [fieldName] = getOptionEntry(flag.staff, properties) ?? [toCamelCase(flag.name), {}];
-        if(options[fieldName] === undefined) {
-          options[fieldName] = [];
-        }
-        const array = options[fieldName] as string[];
+        const [fieldName, option] = getOptionEntry(flag.staff, properties) ?? [toCamelCase(flag.name), {}];
+        const array: string[] = [];
         if(flag.body !== undefined) {
           array.push(flag.body);
         } else {
-          // eslint-disable-next-line max-depth
-          while(index < input.length-1 && input[index+1] !== undefined && !isFlag(input[index+1] as string)) {
+          while(index < input.length-1 && input[index+1] !== undefined && !isFlag(input[index+1] as string) && (option.variadic || array.length === 0)) {
             array.push(input[index+1] as string);
             index+=1;
           }
-          // eslint-disable-next-line max-depth
           if(array.length === 0) {
             array.push("true");
           }
+        }
+        if(option.variadic) {
+          if(options[fieldName] === undefined) {
+            options[fieldName] = [];
+          }
+          options[fieldName] = (options[fieldName] as string[]).concat(array);
+        } else {
+          options[fieldName] = array[0] as string;
         }
       }
     } else {
@@ -105,7 +113,7 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
       return argument.parser(...value);
     } else {
       if(argument.required) {
-        throw new Error(`Argument "${wrapRequiredParameter(argument.name)}" is required.`);
+        throw new Error(`Argument "${wrapRequiredParameter(argument.name, argument.variadic)}" is required.`);
       }
       return undefined;
     }

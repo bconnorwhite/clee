@@ -42,7 +42,7 @@ function getUsage<N extends string, I extends Input, R, S extends Commands>(prop
 function getParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
   const argsHaveDescription = properties.arguments.some(({ description }) => description !== undefined);
   const argumentParameters = argsHaveDescription ? properties.arguments.map(({ name, required, variadic, description }) => {
-    return [`  ${wrapParameter(name, required, variadic)}`, description ?? ""] as const;
+    return [leftPad(wrapParameter(name, required, variadic), 2), description ?? ""] as const;
   }) : [];
   const options = Object.values<Option<LongFlag, unknown>>(properties.options ?? {});
   if(properties.version.version !== undefined && (properties.version.shortFlag || properties.version.longFlag)) {
@@ -54,7 +54,9 @@ function getParameters<N extends string, I extends Input, R, S extends Commands>
   const optionParameters = options.map((option) => {
     const shortFlag = rightPad(option.shortFlag, 2);
     const separator = option.shortFlag && option.longFlag ? "," : " ";
-    return [`  ${shortFlag}${separator}${leftPad(option.longFlag, 1)}`, option.description ?? ""] as const;
+    const longFlag = leftPad(option.longFlag, 1);
+    const parameter = option.parameter ? leftPad(wrapParameter(option.parameter, option.required, option.variadic), 1) : "";
+    return [`  ${shortFlag}${separator}${longFlag}${parameter}`, option.description ?? ""] as const;
   });
   const commandParameters = (Object.values(properties.commands ?? {}) as Command[]).map((command) => {
     const subOptionParameter = command.options() ? ` ${wrapOptionalParameter("options", false)}` : "";

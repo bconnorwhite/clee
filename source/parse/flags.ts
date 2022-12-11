@@ -43,20 +43,20 @@ export function getShortFlag(letter: Letter): ShortFlag {
 /**
  * Returns true if `string` is a flag.
  */
-export function isFlag(string: string): string is Flag {
-  return (/^--?[^-=\s]+/).test(string);
+export function isFlag(value: any): value is Flag {
+  return typeof value === "string" && (/^--?[^-=\s]+/).test(value);
 }
 
-export function isShortFlag(string: string): string is ShortFlag {
-  return (/^-[^-=\s]+/).test(string);
+export function isShortFlag(value: any): value is ShortFlag {
+  return typeof value === "string" && (/^-[^-=\s]+/).test(value);
 }
 
-export function isLongFlag(string: string): string is LongFlag {
-  return (/^--[^-=\s]+/).test(string);
+export function isLongFlag(value: any): value is LongFlag {
+  return typeof value === "string" && (/^--[^-=\s]+/).test(value);
 }
 
-export function isCompoundFlag(string: string): string is CompoundFlag {
-  return (/^-[^-=\s]{2,}/).test(string);
+export function isCompoundFlag(value: any): value is CompoundFlag {
+  return typeof value === "string" && (/^-[^-=\s]{2,}/).test(value);
 }
 
 export function isInverseFlag(flag: LongFlag) {

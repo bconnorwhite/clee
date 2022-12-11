@@ -73,11 +73,11 @@ describe("option", () => {
 
 describe("requiredOption", () => {
   describe("boolean", () => {
-    const cmd = clee("clee").requiredOption("-f", "--flag", "Description");
+    const cmd = clee("clee").option("-f", "--flag", "<value>", "Description");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
-        message: "Usage: clee [options]\n\nOptions:\n  -f, --flag  Description\n  -h, --help  Display help for command"
+        message: "Usage: clee [options]\n\nOptions:\n  -f, --flag <value>  Description\n  -h, --help          Display help for command"
       });
     });
     test("is required", async () => {

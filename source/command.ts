@@ -43,9 +43,8 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
    */
   argument: HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
   arguments: () => ArgumentsPropertyFromInput<I>;
-  option: ReturnType<typeof getOptionFn<N, I, R, S, false>>;
+  option: ReturnType<typeof getOptionFn<N, I, R, S>>;
   options: () => OptionsPropertyFromInput<I>;
-  requiredOption: ReturnType<typeof getOptionFn<N, I, R, S, true>>;
   // Additional options
   help: ReturnType<typeof getHelpFn<N, I, R, S>>;
   version: ReturnType<typeof getVersionFn<N, I, R, S>>;
@@ -110,9 +109,8 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
     properties.arguments[properties.arguments.length-1]?.variadic ? undefined : getArgumentFn(properties)
   ) as HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
   Object.defineProperty(command, "arguments", { value: () => properties.arguments, writable: true }); // This is super hacky but I'm gonna leave it until something breaks
-  command.option = getOptionFn(properties, false);
+  command.option = getOptionFn(properties);
   command.options = () => properties.options;
-  command.requiredOption = getOptionFn(properties, true);
   // Additional options
   command.help = getHelpFn(properties);
   command.version = getVersionFn(properties);

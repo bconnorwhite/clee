@@ -6,7 +6,7 @@ describe("mixed", () => {
   const cmd = clee("clee")
     .argument("<arg1>", "Description")
     .argument("[argument2]", "Description")
-    .requiredOption("-o", "--option1", "Description")
+    .option("-o", "--option1", "<value>", "Description")
     .option("-p", "--opt2", "Description")
     .action((arg1, arg2, options) => {
       return { arg1, arg2, options };
@@ -16,8 +16,8 @@ describe("mixed", () => {
     expect(result).toStrictEqual({
       message: [
         "Usage: clee [options] <arg1> [argument2]",
-        "Arguments:\n  <arg1>         Description\n  [argument2]    Description",
-        "Options:\n  -o, --option1  Description\n  -p, --opt2     Description\n  -h, --help     Display help for command"
+        "Arguments:\n  <arg1>                 Description\n  [argument2]            Description",
+        "Options:\n  -o, --option1 <value>  Description\n  -p, --opt2             Description\n  -h, --help             Display help for command"
       ].join("\n\n")
     });
   });
