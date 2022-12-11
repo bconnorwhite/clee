@@ -40,11 +40,11 @@ export function isParameter(parameter: any): parameter is Parameter {
   return typeof parameter === "string" && ((parameter.startsWith("<") && parameter.endsWith(">")) || (parameter.startsWith("[") && parameter.endsWith("]")));
 }
 
-function wrapOptionalParameter(parameter: string, variadic = false) {
+function wrapOptionalParameter(parameter: string, variadic = false): OptionalParameter {
   return `[${parameter}${variadic ? "..." : ""}]`;
 }
 
-function wrapRequiredParameter(parameter: string, variadic = false) {
+function wrapRequiredParameter(parameter: string, variadic = false): RequiredParameter {
   return `<${parameter}${variadic ? "..." : ""}>`;
 }
 
