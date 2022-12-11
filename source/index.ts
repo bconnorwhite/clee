@@ -30,6 +30,7 @@ export type {
   CommandResult,
   CommandSubCommands
 } from "./command";
+export type { Option, Argument } from "./input";
 export {
   parseString,
   parseStrings,

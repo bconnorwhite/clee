@@ -1,12 +1,12 @@
 /* eslint-disable max-depth */
 import { parseBoolean } from "../index.js";
-import { Input } from "../input/index.js";
+import { Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
 import { Option, OptionsPropertyFromInput } from "../input/options/index.js";
 import { toCamelCase } from "../input/options/casing.js";
 import { Flag, isFlag, LongFlag, isInverseFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
-import { hasHelpFlag, getHelp, wrapRequiredParameter } from "../help.js";
-import { hasVersionFlag, getVersion } from "../version.js";
+import { hasHelpFlag, getHelp } from "../help.js";
+import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
 
 /**
  * Program output in the case that the help or version flags are used.
@@ -113,7 +113,7 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
       return argument.parser(...value);
     } else {
       if(argument.required) {
-        throw new Error(`Argument "${wrapRequiredParameter(argument.name, argument.variadic)}" is required.`);
+        throw new Error(`Argument "${wrapParameter(argument.name, true, argument.variadic)}" is required.`);
       }
       return undefined;
     }
@@ -143,7 +143,7 @@ function parseArgs<N extends string, I extends Input, R, S extends Commands>(
 export function getParseFn<N extends string, I extends Input, R, S extends Commands>(
   properties: CommandProperties<N, I, R, S>
 ) {
-  return async <A extends readonly string[] | undefined>(input?: A, parseOptions?: ParseOptions): Promise<ParseResult> => {
+  async function parseFn<A extends readonly string[] | undefined>(input?: A, parseOptions?: ParseOptions): Promise<ParseResult> {
     const array = (input ?? process.argv.slice(2));
     const subcommand = array[0];
     if(subcommand && properties.commands?.[subcommand]) {
@@ -154,7 +154,7 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
         console.info(help);
       }
       return { message: help };
-    } else if(properties.version.version !== undefined && hasVersionFlag(properties, array)) {
+    } else if(isActiveVersionOption(properties.version) && hasVersionFlag(properties, array)) {
       const version = getVersion(properties);
       if(version) {
         if(parseOptions?.silent !== true) {
@@ -186,7 +186,8 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
         }
       }
     }
-  };
+  }
+  return parseFn;
 }
 
 export * from "./parser.js";

@@ -1,7 +1,7 @@
 import {
   Input,
-  getArgumentFn, ArgumentsPropertyFromInput,
-  getOptionFn, OptionsPropertyFromInput
+  getArgumentFn, getArgumentsFn, ArgumentsPropertyFromInput,
+  getOptionFn, getOptionsFn, OptionsPropertyFromInput
 } from "./input/index.js";
 import { OptionSkin } from "./input/options/index.js";
 import { HasVariadicArgument, ArgumentsFromInput } from "./input/arguments.js";
@@ -13,7 +13,7 @@ import { Formatter, getFormatFn } from "./format.js";
 import { getRunFn } from "./run.js";
 import { getParseFn } from "./parse/index.js";
 import { getHelpFn } from "./help.js";
-import { getVersionFn } from "./version.js";
+import { getVersionFn, VersionOption } from "./version.js";
 
 export type Commands = Record<string, unknown> | undefined;
 
@@ -30,7 +30,7 @@ export type CommandSubCommands<C> = C extends Command<infer N, infer I, infer R,
  * Calling the command itself returns `R | Error`.
  */
 export interface Command<N extends string=string, I extends Input=[], R=void, S extends Commands=undefined> extends Action<I, R> {
-  // Metadata about the command
+  // Base Settings
   name: ReturnType<typeof getNameFn<N, I, R, S>>;
   title: ReturnType<typeof getTitleFn<N, I, R, S>>;
   description: ReturnType<typeof getDescriptionFn<N, I, R, S>>;
@@ -42,9 +42,9 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
    * Optional - "[parameter]"  
    */
   argument: HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
-  arguments: () => ArgumentsPropertyFromInput<I>;
+  arguments: ReturnType<typeof getArgumentsFn<N, I, R, S>>;
   option: ReturnType<typeof getOptionFn<N, I, R, S>>;
-  options: () => OptionsPropertyFromInput<I>;
+  options: ReturnType<typeof getOptionsFn<N, I, R, S>>;
   // Additional options
   help: ReturnType<typeof getHelpFn<N, I, R, S>>;
   version: ReturnType<typeof getVersionFn<N, I, R, S>>;
@@ -59,7 +59,7 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
  * Properties that define a command.
  */
 export type CommandProperties<N extends string, I extends Input, R, S extends Commands> = {
-  // Metadata about the command
+  // Base Settings
   name: N;
   title?: string;
   description?: string;
@@ -69,8 +69,8 @@ export type CommandProperties<N extends string, I extends Input, R, S extends Co
   options: OptionsPropertyFromInput<I>;
   // Additional options
   help: Partial<OptionSkin>;
-  version: Partial<OptionSkin> & { version?: string };
-  // The action
+  version: VersionOption;
+  // The action and formatter
   action: Action<I, R>;
   format: Formatter<R, OptionsPropertyFromInput<I>>;
 };
@@ -99,7 +99,7 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
   properties: CommandProperties<N, I, R, S>
 ): Command<N, I, R, S> {
   const command = properties.action as Command<N, I, R, S>;
-  // Metadata about the command
+  // Base Settings
   Object.defineProperty(command, "name", { value: getNameFn(properties) }); // This is super hacky but I'm gonna leave it until something breaks
   command.title = getTitleFn(properties);
   command.description = getDescriptionFn(properties);
@@ -108,9 +108,9 @@ export function getCommand<N extends string, I extends Input=[], R=void, S exten
   command.argument = (
     properties.arguments[properties.arguments.length-1]?.variadic ? undefined : getArgumentFn(properties)
   ) as HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
-  Object.defineProperty(command, "arguments", { value: () => properties.arguments, writable: true }); // This is super hacky but I'm gonna leave it until something breaks
+  Object.defineProperty(command, "arguments", { value: getArgumentsFn(properties), writable: true }); // This is super hacky but I'm gonna leave it until something breaks
   command.option = getOptionFn(properties);
-  command.options = () => properties.options;
+  command.options = getOptionsFn(properties);
   // Additional options
   command.help = getHelpFn(properties);
   command.version = getVersionFn(properties);

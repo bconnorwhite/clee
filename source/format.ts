@@ -59,13 +59,23 @@ export async function formatStringsToLines<R extends PromiseOrValue<string[]>, O
   return value.join("\n");
 }
 
+/**
+ * Generates a function for getting and setting a Command's formatter.
+ */
 export function getFormatFn<N extends string, I extends Input, R, S extends Commands>(
   properties: CommandProperties<N, I, R, S>
-): (format: Formatter<R, OptionsPropertyFromInput<I>>) => Command<N, I, R, S> {
-  return (format: Formatter<R, OptionsPropertyFromInput<I>>): Command<N, I, R, S> => {
-    return getCommand<N, I, R, S>({
-      ...properties,
-      format
-    });
-  };
+) {
+  function formatFn<F extends Formatter<R, OptionsPropertyFromInput<I>> | undefined = undefined>(
+    format?: F
+  ): F extends undefined ? Formatter<R, OptionsPropertyFromInput<I>> : Command<N, I, R, S> {
+    if(format === undefined) {
+      return properties.format as F extends undefined ? Formatter<R, OptionsPropertyFromInput<I>> : Command<N, I, R, S>;
+    } else {
+      return getCommand<N, I, R, S>({
+        ...properties,
+        format
+      }) as F extends undefined ? Formatter<R, OptionsPropertyFromInput<I>> : Command<N, I, R, S>;
+    }
+  }
+  return formatFn;
 }

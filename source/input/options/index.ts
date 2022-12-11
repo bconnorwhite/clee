@@ -1,8 +1,8 @@
 import { CommandProperties, getCommand, Command, Commands } from "../../command.js";
 import { Action } from "../../action.js";
 import { Formatter } from "../../format";
-import { Parser, Parsable, ShortFlag, LongFlag } from "../../parse/index.js";
-import { Input, Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getName, VariadicParameter } from "../index.js";
+import { Parser, Parsable, ShortFlag, LongFlag, parseBooleans, parseBoolean } from "../../parse/index.js";
+import { Input, Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getParameterName, VariadicParameter } from "../index.js";
 import { ArgumentsFromInput, ArgumentsPropertyFromInput } from "../arguments.js";
 import { LongFlagToCamelCase, longFlagToCamelCase } from "./casing.js";
 import { isShortFlag } from "../../parse/flags.js";
@@ -21,10 +21,10 @@ export type OptionSkin<L extends LongFlag = LongFlag> = {
 /**
  * The properties that define an option.
  */
-export type Option<L extends LongFlag, V> = OptionSkin<L> & Partial<Parsable<V>> & {
+export type Option<L extends LongFlag, V> = OptionSkin<L> & Parsable<V> & {
   required: boolean;
   variadic: boolean;
-  parameter?: string;
+  name?: string;
 };
 
 /**
@@ -36,7 +36,7 @@ export type OptionsFromInput<I extends Input> = I extends [...infer A, infer B]
   : undefined;
 
 /**
- * Returns the type of a Command's `properties.options` field for a given Input type.
+ * Return a type a Command's `properties.options` field from a given Input type.
  */
 export type OptionsPropertyFromInput<I extends Input> = I extends [...infer A, infer B]
   ? B extends Options ? { [K in keyof B]: Option<LongFlag, B[K]>; } : undefined
@@ -68,6 +68,10 @@ type MergeOptionsToInput<I extends Input, L extends LongFlag, V, Q extends boole
     [K in keyof MergeOptions<OptionsFromInput<I>, OptionWithFieldName<L, V>, Q>]: MergeOptions<OptionsFromInput<I>, OptionWithFieldName<L, V>, Q>[K];
   }
 ];
+
+type ReplaceOptionsInInput<I extends Input, O> = I extends [...infer A, infer B]
+  ? B extends Options ? [...A, O] : [...I, O]
+  : [...I, O];
 
 function isFunction(value: unknown): value is (...args: any[]) => any {
   return typeof value === "function";
@@ -116,7 +120,8 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
     const longFlag = stack.shift() as L;
     const parameter = (isParameter(stack[0]) ? stack.shift() : undefined) as P | undefined;
     const description = (typeof stack[0] === "string" ? stack.shift() : undefined) as string | undefined;
-    const parser = (isFunction(stack[0]) ? stack.shift() : undefined) as Parser<V> | undefined;
+    const variadic = isVariadic(parameter);
+    const parser = (isFunction(stack[0]) ? stack.shift() : (variadic ? parseBooleans : parseBoolean)) as Parser<V>;
     return getCommand<N, MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
       action: properties.action as unknown as Action<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>, R>,
@@ -130,7 +135,7 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
           description,
           required: isRequired(parameter),
           variadic: isVariadic(parameter),
-          parameter: parameter ? getName(parameter) : undefined,
+          name: parameter ? getParameterName(parameter) : undefined,
           parser
         }
       } as unknown as OptionsPropertyFromInput<MergeOptionsToInput<I, L, V, P extends RequiredParameter ? true : false>>,
@@ -140,7 +145,7 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
         description: properties.help.description
       },
       version: {
-        version: properties.version.version,
+        ...properties.version,
         shortFlag: properties.version.shortFlag === shortFlag ? undefined : properties.version.shortFlag,
         longFlag: properties.version.longFlag === longFlag ? undefined : properties.version.longFlag,
         description: properties.version.description
@@ -148,4 +153,23 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
     });
   }
   return optionFn;
+}
+
+export function getOptionsFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
+  function getOptions<O extends Options | undefined = undefined>(
+    options?: O
+  ): O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I> {
+    if(options === undefined) {
+      return properties.options as O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I>;
+    } else {
+      return getCommand<N, ReplaceOptionsInInput<I, O>, R, S>({
+        ...properties,
+        action: properties.action as unknown as Action<ReplaceOptionsInInput<I, O>, R>,
+        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceOptionsInInput<I, O>>>,
+        arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<ReplaceOptionsInInput<I, O>>,
+        options: options as unknown as OptionsPropertyFromInput<ReplaceOptionsInInput<I, O>>
+      }) as O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I>;
+    }
+  }
+  return getOptions;
 }

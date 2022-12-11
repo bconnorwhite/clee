@@ -1,15 +1,8 @@
 import { Command, CommandProperties, getCommand, Commands } from "./command.js";
-import { Input } from "./input/index.js";
+import { Input, wrapParameter } from "./input/index.js";
 import { Option } from "./input/options/index.js";
 import { ShortFlag, LongFlag } from "./parse/index.js";
-
-function wrapOptionalParameter(parameter: string, variadic: boolean) {
-  return `[${parameter}${variadic ? "..." : ""}]`;
-}
-
-export function wrapRequiredParameter(parameter: string, variadic: boolean) {
-  return `<${parameter}${variadic ? "..." : ""}>`;
-}
+import { isActiveVersionOption } from "./version.js";
 
 function rightPad(string = "", length: number) {
   return string.padEnd(length, " ");
@@ -17,10 +10,6 @@ function rightPad(string = "", length: number) {
 
 function leftPad(string = "", length: number) {
   return string ? string.padStart(string.length + length, " ") : "";
-}
-
-function wrapParameter(parameter: string, required: boolean, variadic: boolean) {
-  return required ? wrapRequiredParameter(parameter, variadic) : wrapOptionalParameter(parameter, variadic);
 }
 
 function getTitle<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
@@ -32,8 +21,8 @@ function getDescription<N extends string, I extends Input, R, S extends Commands
 }
 
 function getUsage<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
-  const optionParameter = properties.options ? ` ${wrapOptionalParameter("options", false)}` : "";
-  const commandParameter = Object.keys(properties.commands ?? {}).length > 0 ? ` ${wrapOptionalParameter("command", false)}` : "";
+  const optionParameter = properties.options ? ` ${wrapParameter("options", false, false)}` : "";
+  const commandParameter = Object.keys(properties.commands ?? {}).length > 0 ? ` ${wrapParameter("command")}` : "";
   return properties.arguments.reduce((retval, { name, required, variadic }) => {
     return `${retval} ${wrapParameter(name, required, variadic)}`;
   }, `Usage: ${properties.name}${optionParameter}${commandParameter}`);
@@ -44,9 +33,9 @@ function getParameters<N extends string, I extends Input, R, S extends Commands>
   const argumentParameters = argsHaveDescription ? properties.arguments.map(({ name, required, variadic, description }) => {
     return [leftPad(wrapParameter(name, required, variadic), 2), description ?? ""] as const;
   }) : [];
-  const options = Object.values<Option<LongFlag, unknown>>(properties.options ?? {});
-  if(properties.version.version !== undefined && (properties.version.shortFlag || properties.version.longFlag)) {
-    options.push(properties.version as Option<LongFlag, unknown>);
+  const options = Object.values<Partial<Option<LongFlag, unknown>>>(properties.options ?? {});
+  if(isActiveVersionOption(properties.version)) {
+    options.push(properties.version);
   }
   if(properties.help.shortFlag || properties.help.longFlag) {
     options.push(properties.help as Option<LongFlag, unknown>);
@@ -55,11 +44,11 @@ function getParameters<N extends string, I extends Input, R, S extends Commands>
     const shortFlag = rightPad(option.shortFlag, 2);
     const separator = option.shortFlag && option.longFlag ? "," : " ";
     const longFlag = leftPad(option.longFlag, 1);
-    const parameter = option.parameter ? leftPad(wrapParameter(option.parameter, option.required, option.variadic), 1) : "";
+    const parameter = option.name ? leftPad(wrapParameter(option.name, option.required, option.variadic), 1) : "";
     return [`  ${shortFlag}${separator}${longFlag}${parameter}`, option.description ?? ""] as const;
   });
   const commandParameters = (Object.values(properties.commands ?? {}) as Command[]).map((command) => {
-    const subOptionParameter = command.options() ? ` ${wrapOptionalParameter("options", false)}` : "";
+    const subOptionParameter = command.options() ? ` ${wrapParameter("options")}` : "";
     const subArgumentParameters = command.arguments().reduce((argRetval, { name, required, variadic }) => {
       return `${argRetval} ${wrapParameter(name, required, variadic)}`;
     }, "");
@@ -114,7 +103,7 @@ export function hasHelpFlag<N extends string, I extends Input, R, S extends Comm
 export function getHelpFn<N extends string, I extends Input, R, S extends Commands>(
   properties: CommandProperties<N, I, R, S>
 ) {
-  return (shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, I, R, S> => {
+  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, I, R, S> {
     return getCommand({
       ...properties,
       help: {
@@ -123,5 +112,6 @@ export function getHelpFn<N extends string, I extends Input, R, S extends Comman
         description
       }
     });
-  };
+  }
+  return helpFn;
 }

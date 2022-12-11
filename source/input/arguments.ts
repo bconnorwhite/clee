@@ -2,7 +2,7 @@ import { CommandProperties, getCommand, Command, Commands } from "../command.js"
 import { Action } from "../action.js";
 import { Formatter } from "../format";
 import { Parsable, Parser, parseString, parseStrings } from "../parse/index.js";
-import { Input, Parameter, isRequired, isVariadic, getName, RequiredParameter, VariadicParameter } from "./index.js";
+import { Input, Parameter, isRequired, isVariadic, getParameterName, RequiredParameter, VariadicParameter } from "./index.js";
 import { Options, OptionsPropertyFromInput, OptionsFromInput } from "./options/index.js";
 
 /**
@@ -21,17 +21,25 @@ export interface Argument<V> extends Parsable<V> {
   variadic: boolean;
 }
 
-export type ArgumentsPropertyFromInput<I extends Input> = {
-  [K in keyof I]: Argument<I[K]>;
-};
-
 /**
  * Transforms an Input to extract Arguments.
  */
 export type ArgumentsFromInput<I> = I extends [...infer A, infer B]
-  ? B extends Options ? A : MergeArgs<A, B>
-  : [];
+ ? B extends Options ? A : MergeArgs<A, B>
+ : [];
 
+/**
+ * Return a type a Command's `properties.arguments` field from a given Input type.
+ */
+export type ArgumentsPropertyFromInput<I> = I extends [...infer A, infer B]
+  ? B extends Options
+    ? { [K in keyof A]: Argument<A[K]>; }
+    : { [K in keyof I]: Argument<I[K]>; }
+  : { [K in keyof I]: Argument<I[K]>; };
+
+/**
+ * Returns true if the last argument in a set of Arguments is variadic.
+ */
 export type HasVariadicArgument<A extends Arguments> = A extends [...infer B, infer C]
   ? C extends string[] ? true : false
   : false;
@@ -47,6 +55,10 @@ type MergeArgs<A extends Arguments, B> = [...A, B];
 type MergeArgsToInput<I extends Input, V, Q extends boolean> = OptionsFromInput<I> extends undefined
   ? [...MergeArgs<ArgumentsFromInput<I>, Q extends true ? V : V | undefined>]
   : [...MergeArgs<ArgumentsFromInput<I>, Q extends true ? V : V | undefined>, OptionsFromInput<I>];
+
+type ReplaceArgsInInput<I extends Input, A extends Arguments> = OptionsFromInput<I> extends undefined
+  ? A
+  : [...A, OptionsFromInput<I>];
 
 export function getArgumentFn<N extends string, I extends Input, R, S extends Commands>(
   properties: CommandProperties<N, I, R, S>
@@ -67,7 +79,7 @@ export function getArgumentFn<N extends string, I extends Input, R, S extends Co
   ): Command<N, MergeArgsToInput<I, V, P extends RequiredParameter ? true : false>, R, S> {
     const variadic = isVariadic(parameter);
     const argument: Argument<V> = {
-      name: getName(parameter),
+      name: getParameterName(parameter),
       required: isRequired(parameter),
       variadic,
       description: typeof b === "string" ? b : undefined,
@@ -82,4 +94,25 @@ export function getArgumentFn<N extends string, I extends Input, R, S extends Co
     });
   }
   return argumentFn;
+}
+
+export function getArgumentsFn<N extends string, I extends Input, R, S extends Commands>(
+  properties: CommandProperties<N, I, R, S>
+) {
+  function argumentsFn<A extends Argument<unknown>[] | undefined = undefined>(
+    args?: A
+  ): A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsFromInput<A>>, R, S> {
+    if(args === undefined) {
+      return properties.arguments as A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsFromInput<A>>, R, S>;
+    } else {
+      return getCommand<N, ReplaceArgsInInput<I, ArgumentsFromInput<A>>, R, S>({
+        ...properties,
+        action: properties.action as unknown as Action<ReplaceArgsInInput<I, ArgumentsFromInput<A>>, R>,
+        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsFromInput<A>>>>,
+        arguments: args as unknown as ArgumentsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsFromInput<A>>>,
+        options: properties.options as unknown as OptionsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsFromInput<A>>>
+      }) as A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsFromInput<A>>, R, S>;
+    }
+  }
+  return argumentsFn;
 }

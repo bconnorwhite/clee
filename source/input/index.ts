@@ -1,11 +1,11 @@
 
 export type Input = Array<unknown>;
 
-export { getArgumentFn } from "./arguments.js";
-export { getOptionFn } from "./options/index.js";
+export { getArgumentFn, getArgumentsFn } from "./arguments.js";
+export { getOptionFn, getOptionsFn } from "./options/index.js";
 
-export type { ArgumentsPropertyFromInput } from "./arguments.js";
-export type { OptionsPropertyFromInput } from "./options/index.js";
+export type { ArgumentsPropertyFromInput, Argument } from "./arguments.js";
+export type { OptionsPropertyFromInput, Option } from "./options/index.js";
 
 export type RequiredParameter = `<${string}>`;
 export type OptionalParameter = `[${string}]`;
@@ -32,10 +32,22 @@ export function isVariadic<P extends Parameter>(parameter?: P): P extends Variad
   return (typeof parameter === "string" && parameter.slice(0, -1).endsWith("...")) as P extends VariadicParameter ? true : false;
 }
 
-export function getName(parameter: Parameter): string {
+export function getParameterName(parameter: Parameter): string {
   return isVariadic(parameter) ? parameter.slice(1, -4) : parameter.slice(1, -1);
 }
 
 export function isParameter(parameter: any): parameter is Parameter {
   return typeof parameter === "string" && ((parameter.startsWith("<") && parameter.endsWith(">")) || (parameter.startsWith("[") && parameter.endsWith("]")));
+}
+
+function wrapOptionalParameter(parameter: string, variadic = false) {
+  return `[${parameter}${variadic ? "..." : ""}]`;
+}
+
+function wrapRequiredParameter(parameter: string, variadic = false) {
+  return `<${parameter}${variadic ? "..." : ""}>`;
+}
+
+export function wrapParameter(parameter: string, required = false, variadic = false) {
+  return required ? wrapRequiredParameter(parameter, variadic) : wrapOptionalParameter(parameter, variadic);
 }
