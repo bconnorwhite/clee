@@ -29,8 +29,8 @@
     "lint": "turbo lint+",
     "lint+": "eslint source --ext .ts",
     "node-esm": "node --no-warnings --loader ts-node/esm",
-    "test": "yarn test:debug --silent",
-    "test:debug": "yarn build && NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest && tsd",
+    "test": "yarn test:debug --silent && tsd",
+    "test:debug": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "typecheck": "tsc --noEmit && tsc tests/**/*.ts --noEmit --esModuleInterop",
     "watch": "yarn build+ --watch"
   },

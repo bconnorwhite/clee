@@ -25,8 +25,3 @@ V   - "Value"
 ```
 
 (I would fully spell these out, but then the code becomes much more verbose and it becomes confusing as to what is a generic and what is a type.)
-
-
-
-
-TODO - args vs arguments

@@ -1,4 +1,4 @@
-import path from "node:path";
+import { resolve, relative, parse, ParsedPath } from "node:path";
 import { Dirent } from "node:fs";
 import fs from "node:fs/promises";
 
@@ -14,6 +14,9 @@ export type Parsable<V=unknown> = {
   parser: Parser<V>;
 };
 
+/**
+ * Pass through function that returns the input value.
+ */
 export function parseString(string: string): string {
   return string;
 }
@@ -40,6 +43,9 @@ export function parseBoolean(input: string): boolean {
   }
 }
 
+/**
+ * Parse a number from a string.
+ */
 export function parseNumber(string: string): number {
   const number = Number(string);
   if(Number.isNaN(number)) {
@@ -49,6 +55,9 @@ export function parseNumber(string: string): number {
   }
 }
 
+/**
+ * Parse an integer from a string.
+ */
 export function parseInt(string: string): number {
   const int = Number.parseInt(string);
   if(Number.isNaN(int)) {
@@ -58,6 +67,9 @@ export function parseInt(string: string): number {
   }
 }
 
+/**
+ * Parse a float from a string.
+ */
 export function parseFloat(string: string): number {
   const float = Number.parseFloat(string);
   if(Number.isNaN(float)) {
@@ -67,6 +79,9 @@ export function parseFloat(string: string): number {
   }
 }
 
+/**
+ * Parse a JSON value from a string.
+ */
 export function parseJSON(string: string): number {
   try {
     return JSON.parse(string);
@@ -106,7 +121,7 @@ export function parseURL(string: string): URL {
 }
 
 export type Path = {
-  [K in "absolute" | "relative" | keyof path.ParsedPath]: K extends keyof path.ParsedPath ? path.ParsedPath[K] : string;
+  [K in "absolute" | "relative" | keyof ParsedPath]: K extends keyof ParsedPath ? ParsedPath[K] : string;
 };
 
 /**
@@ -120,21 +135,26 @@ export type Path = {
  */
 export function parsePath(string: string): Path {
   const body = string.startsWith("file://") ? string.substring(7) : string;
-  const absolute = path.resolve(body);
-  const relative = path.relative(process.cwd(), absolute);
+  const absolute = resolve(body);
   return {
     absolute,
-    relative,
-    ...path.parse(absolute)
+    relative: relative(process.cwd(), absolute),
+    ...parse(absolute)
   };
 }
 
-export function parseFile(string: string): Promise<Buffer> {
-  const { absolute } = parsePath(string);
+/**
+ * Parse a file from a path name.
+ */
+export function parseFile(path: string): Promise<Buffer> {
+  const { absolute } = parsePath(path);
   return fs.readFile(absolute);
 }
 
-export function parseDirectory(string: string): Promise<Dirent[]> {
-  const { absolute } = parsePath(string);
+/**
+ * Parse a directory's entries from a directory path.
+ */
+export function parseDirectory(path: string): Promise<Dirent[]> {
+  const { absolute } = parsePath(path);
   return fs.readdir(absolute, { withFileTypes: true });
 }
