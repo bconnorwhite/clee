@@ -84,7 +84,7 @@ Clee is heavily inspired by [commander](https://github.com/tj/commander.js). The
 A `Command` can be either called directly, or parsed from the command line. When a `Command` is called directly, if follows the following stages:
 
 <div align="center">
-  <code>[input]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[return]</code>
+  <code>[function input]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[function return]</code>
 </div>
 
 <br />
@@ -92,7 +92,7 @@ A `Command` can be either called directly, or parsed from the command line. When
 When a command is parsed from the command line, the result is also formatted and then output to the console:
 
 <div align="center">
-  <code>[arguments]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[formatter]</code> -> <code>[output]</code>
+  <code>[cli arguments]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[formatter]</code> -> <code>[cli output]</code>
 </div>
 
 #### Parser
@@ -174,16 +174,6 @@ import clee, { stringParser } from "clee";
 clee("my-program")
   .option("--flag") // An option with no description, using the default boolean parser
   .option("-o", "--other", "Description", stringParser) // An option using a custom parser
-```
-
-Example help screen:
-```
-Usage: my-program [options]
-
-Options:
-      --flag 
-  -o, --other  Description
-  -h, --help   Display help for command
 ```
 
 ### Commands
