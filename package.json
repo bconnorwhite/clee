@@ -6,6 +6,15 @@
   "author": "Connor White",
   "license": "MIT",
   "private": false,
+  "keywords": [
+    "cli",
+    "terminal",
+    "command",
+    "line",
+    "parser",
+    "commander",
+    "terminal"
+  ],
   "type": "module",
   "exports": "./build/index.js",
   "files": [
