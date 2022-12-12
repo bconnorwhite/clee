@@ -34,8 +34,10 @@ Clee is a library for creating CLI applications with TypeScript. It is designed 
 - [Structure](#structure)  
 - [Usage](#usage)  
   - [Base Settings](#base-settings)
-  - [Arguments](#arguments)
-  - [Options](#options)
+  - [Inputs](#inputs)
+    - [Arguments](#arguments)
+    - [Options](#options)
+    - [Parsers](#parsers)
   - [Commands](#commands)
   - [Other Settings](#other-settings)
   - [Action](#action)
@@ -137,18 +139,9 @@ Usage: my-program
 Options:
   -h, --help  Display help for command
 ```
+### Inputs
 
-### Arguments
-
-Arguments can be required or optional, and can have a description and a custom parser.
-
-```ts
-import clee from "clee";
-
-clee("my-program")
-  .argument("<name>") // An required argument with no description, using the default string parser
-  .argument("[path]", "Description", pathParser) // An optional argument using a custom parser
-```
+Commands can have arguments and options. Either can be required or optional.
 
 Required arguments are denoted using square brackets, while optional arguments are denoted using angle brackets.
 
@@ -164,7 +157,19 @@ Additionally, three dots can be used to denote a variadic argument. However, onl
 "[optional_variadic...]"
 ```
 
-### Options
+#### Arguments
+
+Arguments can be required or optional, and can have a description and a custom parser.
+
+```ts
+import clee from "clee";
+
+clee("my-program")
+  .argument("<name>") // An required argument with no description, using the default string parser
+  .argument("[path]", "Description", pathParser) // An optional argument using a custom parser
+```
+
+#### Options
 
 Options can have both a short and long flag, or a long flag only. They can also have a description, and a custom parser.
 
@@ -178,36 +183,198 @@ clee("my-program")
   .option("-o", "--other", "Description", stringParser) // An option using a custom parser
 ```
 
-#### Option Values
+##### Option Values
 Values can be provided to options with either a space or an equals sign.
 
 ```
 --flag value
 --flag=value
 ```
-##### Compound Flags
+###### Compound Flags
 Additionally, compound flags can be used to group multiple short flags together:
 ```
 -abc
 ```
-##### Variadic Options
+###### Variadic Options
 Variadic options can be provided by listing multiple values, or by repeating the flag multiple times:
 ```
 --header value1 value2
 --header value1 --header value2
 ```
 
+#### Parsers
+
+Arguments and Options can both supply custom parsers. Several are provided with clee:
+
+```ts
+import {
+  parseString,
+  parseBoolean,
+  parseNumber,
+  parseInt,
+  parseFloat,
+  parseJSON,
+  parseDate,
+  parseURL,
+  parsePath,
+  parseFile,
+  parseDirectory
+} from "clee";
+```
+
 ### Commands
 
+Commands can also be nested, and have their own arguments, options, actions, and sub-commands.
+
+```ts
+import clee from "clee";
+
+const sub = clee("sub")
+  .action(() => {
+    console.log("Hello from sub command");
+  });
+
+clee("my-program")
+  .command(sub);
+```
+
 ### Other Settings
+
 #### Help
+
+The help flag can be customized with a short flag, long flag, and description:
+```ts
+import clee from "clee";
+
+clee("my-program")
+  .help("-e", "--example", "Custom help description");
+```
+
+By default, `-h` and `--help` are used.
+
 #### Version
 
+A version flag can be added by either hardcoding the value, or by passing a path to a file in project with a package.json:
+
+```ts
+import clee from "clee";
+
+clee("my-program")
+  .version("1.0.0") // Hardcoded version
+
+clee("my-program-2")
+  .version(import.meta.url) // Version from package.json
+```
+If an absolute path is provided, the nearest package.json's version will be used.
+
+Additionally, the version flags and description can also be customized:
+```ts
+import clee from "clee";
+
+clee("my-program")
+  .version("1.0.0", "-e", "--example", "Custom version description")
+```
+
+By default, `-v` and `--version` are used.
+
 ### Action
+
+A command's action is called when the command is parsed from the command line. The action can be async, and can return a value, which will be passed to the formatter.
+
+```ts
+import clee from "clee";
+
+clee("clee").action(() => {
+  console.log("Hello from clee");
+});
+```
+
 ### Call
-### Run
+
+A command can be called directly as a function. The arguments should match the inputs to `action`:
+
+```ts
+import clee from "clee";
+
+const cmd = clee("clee")
+  .argument("<name>")
+  .option("-e", "--exclaimation", "Include an exclaimation point")
+  .action((name, options) => {
+    return `Hello ${name}${options.exclaimation ? "!" : ""}`;
+  });
+
+cmd("World", { exclaimation: true }); // Hello World!
+```
+
 ### Format
+
+Commands can also have formatters. Formatters are bypassed if a command is called directly, but are used when the command is parsed from the command line:
+
+```ts
+import clee from "clee";
+
+clee("clee")
+  .action(() => {
+    return ["line 1", "line 2"];
+  })
+  .format((result) => {
+    return result.join("\n");
+  });
+```
+
+Several built-in formatters are also included with clee:
+```ts
+import {
+  formatDefault,
+  formatBuffer,
+  formatJSON,
+  formatJSONPretty,
+  formatStringsToLines
+} from "clee";
+```
+
+### Run
+Run allows you to run a subcommand from a parent command:
+
+```ts
+import clee from "clee";
+
+const sub = clee("sub")
+  .action(() => {
+    console.log("Hello from sub command");
+  });
+
+const cmd = clee("my-program")
+  .command(sub);
+
+cmd.run("sub"); // Hello from sub command
+```
+
 ### Parse
+By default, parse will use `process.argv.slice(2)`, but a custom array can also be provided:
+
+```ts
+import clee from "clee";
+
+const cmd = clee("clee")
+  .argument("<lines...>")
+  .action((lines) => {
+    return lines.map((line) => `${line}.`)
+  })
+  .format((result) => {
+    return result.join("\n");
+  });
+
+cmd.parse(["one", "two", "three"]);
+
+// Output:
+// one.
+// two.
+// three.
+
+// To reads from process.argv.slice(2):
+// cmd.parse(); 
+```
 
 ### Types
 
@@ -241,13 +408,21 @@ type SubCommands = CommandSubCommands<typeof command>;
 
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
-- [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 
 <h3 id="dev-dependencies">Dev Dependencies</h2>
 
+- [@swc/core](https://www.npmjs.com/package/@swc/core): Super-fast alternative for babel
+- [@swc/jest](https://www.npmjs.com/package/@swc/jest): Swc integration for jest
+- [@types/figlet](https://www.npmjs.com/package/@types/figlet): TypeScript definitions for figlet
 - [@types/node](https://www.npmjs.com/package/@types/node): TypeScript definitions for Node.js
+- [chalk](https://www.npmjs.com/package/chalk): Terminal string styling done right
 - [eslint](https://www.npmjs.com/package/eslint): An AST-based pattern checker for JavaScript.
 - [eslint-config-bob](https://www.npmjs.com/package/eslint-config-bob): ESLint configuration for packages built with @bconnorwhite/bob
+- [jest](https://www.npmjs.com/package/jest): Delightful JavaScript Testing.
+- [ts-node](https://www.npmjs.com/package/ts-node): TypeScript execution environment and REPL for node.js, with source map support
+- [tsd](https://www.npmjs.com/package/tsd): Check TypeScript type definitions
+- [type-fest](https://www.npmjs.com/package/type-fest): A collection of essential TypeScript types
+- [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 - [typescript](https://www.npmjs.com/package/typescript): TypeScript is a language for application scale JavaScript development
 
 <br />
