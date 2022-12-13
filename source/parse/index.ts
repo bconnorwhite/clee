@@ -161,11 +161,12 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
     } else {
       try {
         const args = parseArgs(array, properties);
-        const result = properties.action(...args as I);
+        const result = await Promise.resolve(properties.action(...args as I));
         if(result instanceof Error) {
+          // eslint-disable-next-line require-atomic-updates
           process.exitCode = 1;
         }
-        const string = await Promise.resolve(properties.format(result, args[args.length-1] as OptionsPropertyFromInput<I>));
+        const string = properties.format(result, args[args.length-1] as OptionsPropertyFromInput<I>);
         if(string !== undefined) {
           console.info(string);
         }

@@ -4,12 +4,10 @@ import { Command, CommandProperties, getCommand, Commands } from "./command.js";
 import { Input, OptionsPropertyFromInput } from "./input/index.js";
 import { Options } from "./input/options/index.js";
 
-type PromiseOrValue<T> = T | Promise<T>;
-
-export type Formatter<R, O> = (result: R, options?: O) => PromiseOrValue<string | undefined>;
+export type Formatter<R, O> = (result: R, options?: O) => string | undefined;
 
 function silenceable<R, O>(formatter: Formatter<R, O>, option = "silent") {
-  return async function formatSilenceable(result: R, options?: O) {
+  return function formatSilenceable(result: R, options?: O) {
     if(options && (options as Options)[option]) {
       return undefined;
     } else {
@@ -21,37 +19,32 @@ function silenceable<R, O>(formatter: Formatter<R, O>, option = "silent") {
 /**
  * Formats a value as it would be formatted by `console.log`.
  */
-export async function formatDefault<R>(result: R) {
-  const value = await Promise.resolve(result);
-  if(typeof value === "string") {
-    return value;
-  } else if(value === undefined) {
+export function formatDefault<R>(result: R) {
+  if(typeof result === "string") {
+    return result;
+  } else if(result === undefined) {
     return undefined;
-  } else if(value instanceof Error) {
-    return value.message;
+  } else if(result instanceof Error) {
+    return result.message;
   } else {
-    return formatWithOptions({ colors: true }, "%O", value);
+    return formatWithOptions({ colors: true }, "%O", result);
   }
 }
 
-export async function formatBuffer<R extends PromiseOrValue<Buffer>>(result: R) {
-  const value = await Promise.resolve(result);
-  return value.toString();
+export function formatBuffer<R extends Buffer>(result: R) {
+  return result.toString();
 }
 
-export async function formatJSON<R extends PromiseOrValue<JSONValue>>(result: R) {
-  const value = await Promise.resolve(result);
-  return JSON.stringify(value);
+export function formatJSON<R extends JSONValue>(result: R) {
+  return JSON.stringify(result);
 }
 
-export async function formatJSONPretty<R extends PromiseOrValue<JSONValue>>(result: R) {
-  const value = await Promise.resolve(result);
-  return JSON.stringify(value, null, 2);
+export function formatJSONPretty<R extends JSONValue>(result: R) {
+  return JSON.stringify(result, null, 2);
 }
 
-export async function formatStringsToLines<R extends PromiseOrValue<string[]>>(result: R) {
-  const value = await Promise.resolve(result);
-  return value.join("\n");
+export function formatStringsToLines<R extends string[]>(result: R) {
+  return result.join("\n");
 }
 
 /**
