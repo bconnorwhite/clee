@@ -4,7 +4,7 @@ import { Formatter } from "../../format";
 import { Parser, Parsable, ShortFlag, LongFlag, parseBoolean } from "../../parse/index.js";
 import { Input, Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getParameterName, VariadicParameter } from "../index.js";
 import { ArgumentsFromInput, ArgumentsPropertyFromInput } from "../arguments.js";
-import { LongFlagToCamelCase, longFlagToCamelCase } from "./casing.js";
+import { LongFlagToCamelCase, CamelCaseToLongFlag, longFlagToCamelCase } from "./casing.js";
 import { isShortFlag } from "../../parse/flags.js";
 
 /**
@@ -39,8 +39,15 @@ export type OptionsFromInput<I extends Input> = I extends [...infer A, infer B]
  * Return a type a Command's `properties.options` field from a given Input type.
  */
 export type OptionsPropertyFromInput<I extends Input> = I extends [...infer A, infer B]
-  ? B extends Options ? { [K in keyof B]: Option<LongFlag, B[K]>; } : undefined
+  ? B extends Options ? { [K in keyof B & string]: Option<CamelCaseToLongFlag<K>, B[K]>; } : undefined
   : undefined;
+
+/**
+ * Transform an Options property to an Options Input type.
+ */
+export type OptionsInputFromProperty<O> = {
+  [K in keyof O]: O[K] extends Option<LongFlag, infer V> ? V : never;
+};
 
 /**
  * Returns an option's properties as a sub-field with a Record.
@@ -161,17 +168,17 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
 export function getOptionsFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
   function getOptions<O extends Options | undefined = undefined>(
     options?: O
-  ): O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I> {
+  ): O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I> {
     if(options === undefined) {
-      return properties.options as O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I>;
+      return properties.options as O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I>;
     } else {
-      return getCommand<N, ReplaceOptionsInInput<I, O>, R, S>({
+      return getCommand<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S>({
         ...properties,
-        action: properties.action as unknown as Action<ReplaceOptionsInInput<I, O>, R>,
-        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceOptionsInInput<I, O>>>,
-        arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<ReplaceOptionsInInput<I, O>>,
-        options: options as unknown as OptionsPropertyFromInput<ReplaceOptionsInInput<I, O>>
-      }) as O extends Options ? Command<N, ReplaceOptionsInInput<I, O>, R, S> : OptionsPropertyFromInput<I>;
+        action: properties.action as unknown as Action<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R>,
+        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>>,
+        arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>,
+        options: options as unknown as OptionsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>
+      }) as O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I>;
     }
   }
   return getOptions;

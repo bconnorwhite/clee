@@ -10,8 +10,8 @@ type LongFlagPrefix = "--";
 type FlagPrefix = ShortFlagPrefix | LongFlagPrefix;
 
 export type ShortFlag = `${ShortFlagPrefix}${Letter}`;
-export type LongFlag = `${LongFlagPrefix}${Letter}${string}`;
-export type CompoundFlag = `${ShortFlagPrefix}${Letter}${Letter}${string}`;
+export type LongFlag = `${LongFlagPrefix}${string}`;
+export type CompoundFlag = `${ShortFlagPrefix}${string}`;
 
 export type FlagWithBody = `${ShortFlag | CompoundFlag | LongFlag}=${string}`;
 
