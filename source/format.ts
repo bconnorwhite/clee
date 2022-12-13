@@ -27,6 +27,8 @@ export async function formatDefault<R>(result: R) {
     return value;
   } else if(value === undefined) {
     return undefined;
+  } else if(value instanceof Error) {
+    return value.message;
   } else {
     return formatWithOptions({ colors: true }, "%O", value);
   }

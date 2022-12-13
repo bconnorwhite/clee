@@ -162,6 +162,9 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
       try {
         const args = parseArgs(array, properties);
         const result = properties.action(...args as I);
+        if(result instanceof Error) {
+          process.exitCode = 1;
+        }
         const string = await Promise.resolve(properties.format(result, args[args.length-1] as OptionsPropertyFromInput<I>));
         if(string !== undefined) {
           console.info(string);
