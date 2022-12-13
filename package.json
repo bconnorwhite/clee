@@ -29,7 +29,7 @@
     "node-esm": "node --no-warnings --loader ts-node/esm",
     "test": "yarn test:debug --silent && tsd",
     "test:debug": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
-    "typecheck": "tsc --noEmit && tsc tests/**/*.ts --noEmit --esModuleInterop",
+    "typecheck": "tsc --noEmit && tsc test/**/*.ts --noEmit --esModuleInterop",
     "watch": "yarn build --watch"
   },
   "dependencies": {
