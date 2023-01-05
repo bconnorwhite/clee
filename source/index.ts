@@ -31,7 +31,9 @@ export type {
   CommandResult,
   CommandSubCommands
 } from "./command";
+
 export type { Option, Argument } from "./input";
+
 export {
   parseString,
   parseBoolean,
@@ -46,6 +48,7 @@ export {
   parseDirectory
 } from "./parse/index.js";
 export type { ParseResult, ParseError, ParseOutput } from "./parse/index.js";
+
 export {
   formatDefault,
   formatBuffer,
