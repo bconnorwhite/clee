@@ -408,6 +408,8 @@ type SubCommands = CommandSubCommands<typeof command>;
 
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
+- [type-fest](https://www.npmjs.com/package/type-fest): A collection of essential TypeScript types
+- [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 
 <h3 id="dev-dependencies">Dev Dependencies</h3>
 
@@ -421,8 +423,6 @@ type SubCommands = CommandSubCommands<typeof command>;
 - [jest](https://www.npmjs.com/package/jest): Delightful JavaScript Testing.
 - [ts-node](https://www.npmjs.com/package/ts-node): TypeScript execution environment and REPL for node.js, with source map support
 - [tsd](https://www.npmjs.com/package/tsd): Check TypeScript type definitions
-- [type-fest](https://www.npmjs.com/package/type-fest): A collection of essential TypeScript types
-- [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 - [typescript](https://www.npmjs.com/package/typescript): TypeScript is a language for application scale JavaScript development
 
 <br />
