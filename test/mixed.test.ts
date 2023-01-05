@@ -2,7 +2,47 @@ import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
 import clee from "../source";
 
-describe("mixed", () => {
+describe("simple", () => {
+  const cmd = clee("clee")
+    .argument("[arg1]", "Argument 1")
+    .option("-f", "--flag", "Flag description")
+    .action(async (arg1, options) => {
+      return [arg1, options];
+    });
+  test("parse", async () => {
+    const result = await cmd.parse(["example", "--flag"]);
+    expect(result).toStrictEqual({
+      message: `[ ${chalk.green("'example'")}, { flag: ${chalk.yellow("true")} } ]`
+    });
+  });
+  test("call", async () => {
+    const result = await cmd("example", { flag: true });
+    expect(result).toStrictEqual(["example", { flag: true }]);
+  });
+});
+
+describe("subcommand", () => {
+  const sub = clee("sub")
+    .argument("[arg1]", "Argument 1")
+    .option("-f", "--flag", "Flag description")
+    .action(async (arg1, options) => {
+      return [arg1, options];
+    });
+  const cmd = clee("clee")
+    .command(sub);
+  test("parse", async () => {
+    const result = await cmd.parse(["sub", "example", "--flag"]);
+    expect(result).toStrictEqual({
+      message: `[ ${chalk.green("'example'")}, { flag: ${chalk.yellow("true")} } ]`
+    });
+  });
+  test("run", async () => {
+    const result = await cmd.run("sub", "example", { flag: true });
+    expect(result).toStrictEqual(["example", { flag: true }]);
+  });
+});
+
+describe("complex", () => {
   const cmd = clee("clee")
     .argument("<arg1>", "Description")
     .argument("[argument2]", "Description")
