@@ -75,9 +75,9 @@ export type CommandProperties<N extends string, I extends Input, R, S extends Co
   format: Formatter<R, OptionsPropertyFromInput<I>>;
 };
 
-type MergeCommand<S extends Commands, N2 extends string, I2 extends Input, O2, S2 extends Commands> = {
+type MergeCommand<S extends Commands, N2 extends string, I2 extends Input, R2, S2 extends Commands> = {
   [K in (S extends undefined ? N2 : keyof S | N2)]: K extends N2
-    ? Command<N2, I2, O2, S2>
+    ? Command<N2, I2, R2, S2>
     : (K extends keyof S ? S[K] : never);
 };
 
