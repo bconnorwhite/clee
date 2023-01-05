@@ -56,7 +56,7 @@ Clee is a library for creating CLI applications with TypeScript. It is designed 
 ## Why Clee?
 
 - TypeScript native
-- Extremely modular
+- Enables extreme modularity
 - Easy to test
 - Call as an API, or parse arguments as a CLI
 
