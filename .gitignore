@@ -1,5 +1,6 @@
-.DS_Store
 .turbo
 /build
 /node_modules
+.DS_Store
 *.txt
+yarn-error.log
