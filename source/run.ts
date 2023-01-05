@@ -10,7 +10,7 @@ export function getRunFn<N extends string, I extends Input, R, S extends Command
   function runFn<SN extends keyof S & string>(
     subcommand: SN,
     ...args: S[SN] extends AnyFunction ? Parameters<S[SN]> : never
-  ): R {
+  ): Promise<R> {
     if(properties.commands !== undefined) {
       const fn = properties.commands[subcommand];
       if(typeof fn === "function") {
