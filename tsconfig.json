@@ -22,7 +22,7 @@
     ],
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext",
+    "target": "ES2019",
     "typeRoots": [
       "node_modules/@types",
       "types"
