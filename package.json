@@ -27,7 +27,7 @@
     "dev": "yarn node-esm test.ts",
     "lint": "eslint source --ext .ts",
     "node-esm": "node --no-warnings --loader ts-node/esm",
-    "prepublishOnly": "yarn build",
+    "prepack": "yarn build",
     "test": "yarn test:debug --silent && tsd",
     "test:debug": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "typecheck": "tsc --noEmit && tsc test/**/*.ts --noEmit --esModuleInterop",
