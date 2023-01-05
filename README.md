@@ -409,7 +409,7 @@ type SubCommands = CommandSubCommands<typeof command>;
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
 
-<h3 id="dev-dependencies">Dev Dependencies</h2>
+<h3 id="dev-dependencies">Dev Dependencies</h3>
 
 - [@swc/core](https://www.npmjs.com/package/@swc/core): Super-fast alternative for babel
 - [@swc/jest](https://www.npmjs.com/package/@swc/jest): Swc integration for jest
