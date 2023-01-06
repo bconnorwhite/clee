@@ -22,11 +22,7 @@
     ],
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2019",
-    "typeRoots": [
-      "node_modules/@types",
-      "types"
-    ]
+    "target": "ES2019"
   },
   "files": [
     "source/index.ts"
