@@ -30,9 +30,9 @@ export type {
   CommandOptions,
   CommandResult,
   CommandSubCommands
-} from "./command";
+} from "./command.js";
 
-export type { Option, Argument } from "./input";
+export type { Option, Argument } from "./input/index.js";
 
 export {
   parseString,

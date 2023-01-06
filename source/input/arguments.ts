@@ -1,6 +1,6 @@
 import { CommandProperties, getCommand, Command, Commands } from "../command.js";
 import { Action } from "../action.js";
-import { Formatter } from "../format";
+import { Formatter } from "../format.js";
 import { Parsable, Parser, parseString } from "../parse/index.js";
 import { Input, Parameter, isRequired, isVariadic, getParameterName, RequiredParameter, VariadicParameter } from "./index.js";
 import { Options, OptionsPropertyFromInput, OptionsFromInput } from "./options/index.js";
