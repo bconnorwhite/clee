@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { Option } from "../source";
+import clee, { Option } from "../source/index.js";
 
 const cmd = clee("test")
   .option("-f", "--flag");

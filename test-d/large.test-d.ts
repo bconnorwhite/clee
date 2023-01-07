@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { parseString } from "../source";
+import clee, { parseString } from "../source/index.js";
 
 const subCmd1 = clee("subCmd1")
   .option("-f", "--flag1", "[value]", "description", parseString)

@@ -1,34 +1,13 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@autosoft/tsconfig",
   "compilerOptions": {
-    "declaration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "outDir": "build",
-    "removeComments": false,
-    "resolveJsonModule": true,
+    "outDir": ".auto/build",
     "rootDirs": [
       "source"
-    ],
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES2019"
+    ]
   },
   "files": [
     "source/index.ts"
-  ],
-  "ts-node": {
-    "swc": true,
-    "esm": true
-  }
+  ]
 }

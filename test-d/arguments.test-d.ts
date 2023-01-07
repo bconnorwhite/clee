@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { Argument } from "../source";
+import clee, { Argument } from "../source/index.js";
 
 const cmd = clee("test")
   .argument("[test]");

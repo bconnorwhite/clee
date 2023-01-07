@@ -21,7 +21,7 @@
     "terminal"
   ],
   "exports": "./.auto/build/index.js",
-  "types": ".auto/build/index.d.js",
+  "types": ".auto/build/index.d.ts",
   "files": [
     ".auto/build/**/!(tsconfig.tsbuildinfo)"
   ],
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@types/figlet": "^1.5.5",
     "@types/node": "^18.11.9",
-    "autorepo": "^0.1.3",
+    "autorepo": "^0.1.7",
     "chalk": "^5.2.0"
   },
   "eslintConfig": {

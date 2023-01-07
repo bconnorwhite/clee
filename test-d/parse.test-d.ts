@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { ParseResult } from "../source";
+import clee, { ParseResult } from "../source/index.js";
 
 // Parse
 

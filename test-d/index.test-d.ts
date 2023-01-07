@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { parseBoolean, parseString } from "../source";
+import clee, { parseBoolean, parseString } from "../source/index.js";
 
 // Call
 

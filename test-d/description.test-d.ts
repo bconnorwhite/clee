@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { Command } from "../source";
+import clee, { Command } from "../source/index.js";
 
 // Description
 
