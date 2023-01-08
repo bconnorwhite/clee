@@ -3,20 +3,20 @@ import chalk from "chalk";
 import { formatDefault } from "../source/format.js";
 
 describe("formatDefault", () => {
-  test("undefined", async () => {
-    const result = await formatDefault(undefined);
+  test("undefined", () => {
+    const result = formatDefault(undefined);
     expect(result).toStrictEqual(undefined);
   });
-  test("string", async () => {
-    const result = await formatDefault("test");
+  test("string", () => {
+    const result = formatDefault("test");
     expect(result).toStrictEqual("test");
   });
-  test("object", async () => {
-    const result = await formatDefault({ test: true });
+  test("object", () => {
+    const result = formatDefault({ test: true });
     expect(result).toStrictEqual(`{ test: ${chalk.yellow("true")} }`);
   });
-  test("error", async () => {
-    const result = await formatDefault(new Error("test"));
+  test("error", () => {
+    const result = formatDefault(new Error("test"));
     expect(result).toStrictEqual("test");
   });
 });

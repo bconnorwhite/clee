@@ -1,5 +1,5 @@
 import { describe, test, expect } from "@jest/globals";
-import clee, { parseBoolean, parseString } from "../source";
+import clee, { parseBoolean, parseString } from "../source/index.js";
 
 describe("subcommand", () => {
   const sub = clee("sub")

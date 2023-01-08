@@ -10,7 +10,7 @@ import {
   LongFlag,
   Flag,
   FlagParts
-} from "../../source/parse/flags";
+} from "../../source/parse/flags.js";
 
 describe("isFlag", () => {
   const grid = test.each([

@@ -1,6 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
-import clee, { parseString } from "../source";
+import clee, { parseString } from "../source/index.js";
 
 describe("argument", () => {
   describe("default parser", () => {

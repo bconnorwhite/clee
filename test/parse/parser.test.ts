@@ -10,7 +10,7 @@ import {
   parseURL,
   parsePath,
   parseDate
-} from "../../source/parse/parser";
+} from "../../source/parse/parser.js";
 
 
 test("parseString", () => {

@@ -1,6 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
-import clee from "../source";
+import clee from "../source/index.js";
 
 describe("simple", () => {
   const cmd = clee("clee")

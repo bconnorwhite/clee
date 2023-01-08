@@ -1,5 +1,5 @@
 import { describe, test, expect } from "@jest/globals";
-import clee from "../source";
+import clee from "../source/index.js";
 
 describe("help", () => {
   test("usage", async () => {

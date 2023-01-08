@@ -1,6 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import { getVersionSync } from "get-module-pkg";
-import clee from "../source";
+import clee from "../source/index.js";
 
 describe("version", () => {
   describe("hardcoded", () => {

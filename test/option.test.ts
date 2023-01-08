@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
-import clee, { parseBoolean } from "../source";
-import { parseInt } from "../source/parse/parser";
+import clee, { parseBoolean } from "../source/index.js";
+import { parseInt } from "../source/parse/parser.js";
 
 describe("option", () => {
   describe("boolean", () => {

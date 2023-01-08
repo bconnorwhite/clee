@@ -1,5 +1,5 @@
 import { describe, test, expect } from "@jest/globals";
-import { toCamelCase } from "../../../source/input/options/casing";
+import { toCamelCase } from "../../../source/input/options/casing.js";
 
 describe("toCamelCase", () => {
   const grid = test.each([
