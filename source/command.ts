@@ -37,9 +37,9 @@ export interface Command<N extends string=string, I extends Input=[], R=void, S 
   // Input types
   command: ReturnType<typeof getCommandFn<N, I, R, S>>;
   /**
-   * Create a new argument.  
-   * Required - "\<parameter\>"  
-   * Optional - "[parameter]"  
+   * Create a new argument.
+   * Required - "\<parameter\>"
+   * Optional - "[parameter]"
    */
   argument: HasVariadicArgument<ArgumentsFromInput<I>> extends true ? undefined : ReturnType<typeof getArgumentFn<N, I, R, S>>;
   arguments: ReturnType<typeof getArgumentsFn<N, I, R, S>>;
