@@ -65,7 +65,7 @@ describe("complex", () => {
     test("parse", async () => {
       const result = await cmd.parse(["arg1", "arg2", "-o", "true"]);
       expect(result).toStrictEqual({
-        message: `{ arg1: ${chalk.green("'arg1'")}, arg2: ${chalk.green("'arg2'")}, options: { option1: ${chalk.yellow("true")} } }`
+        message: `{\n  arg1: ${chalk.green("'arg1'")},\n  arg2: ${chalk.green("'arg2'")},\n  options: { option1: ${chalk.yellow("true")}, opt2: ${chalk.gray(undefined)} }\n}`
       });
     });
     test("call", () => {

@@ -2,10 +2,19 @@ import { resolve, relative, parse, ParsedPath } from "node:path";
 import { Dirent } from "node:fs";
 import fs from "node:fs/promises";
 
+export type ParserOptions = {
+  name: string;
+  description?: string;
+  variadic: boolean;
+  required: boolean;
+};
+
 /**
  * A function to parse argument values from an input string.
  */
-export type Parser<V> = (...values: string[]) => V;
+export type Parser<V> =
+  | ((value: string | undefined) => V | undefined)
+  | ((value: string | undefined, options: ParserOptions) => V | undefined);
 
 /**
  * An object that is parsable as an argument.
@@ -14,70 +23,9 @@ export type Parsable<V=unknown> = {
   parser: Parser<V>;
 };
 
-/**
- * Pass through function that returns the input value.
- */
-export function parseString(string: string): string {
-  return string;
-}
-
-/**
- * Parse a boolean from a string.  
- * True values include:
- * ```
- * true, "true", "t", "yes", "y", "1"
- * ```
- * False values include:
- * ```
- * false, "false", "f", "no", "n", "0"
- * ```
- * Other values will throw an error.
- */
-export function parseBoolean(input: string): boolean {
-  if(["true", "t", "yes", "y", "1"].includes(input.toLowerCase())) {
-    return true;
-  } else if(["false", "f", "no", "n", "0"].includes(input.toLowerCase())) {
-    return false;
-  } else {
-    throw new Error("Unable to parse boolean.");
-  }
-}
-
-/**
- * Parse a number from a string.
- */
-export function parseNumber(string: string): number {
-  const number = Number(string);
-  if(Number.isNaN(number)) {
-    throw new Error("Unable to parse number.");
-  } else {
-    return number;
-  }
-}
-
-/**
- * Parse an integer from a string.
- */
-export function parseInt(string: string): number {
-  const int = Number.parseInt(string);
-  if(Number.isNaN(int)) {
-    throw new Error("Unable to parse integer.");
-  } else {
-    return int;
-  }
-}
-
-/**
- * Parse a float from a string.
- */
-export function parseFloat(string: string): number {
-  const float = Number.parseFloat(string);
-  if(Number.isNaN(float)) {
-    throw new Error("Unable to parse float.");
-  } else {
-    return float;
-  }
-}
+export { parseString, promptString } from "./string.js";
+export { parseBoolean, promptBoolean } from "./boolean.js";
+export { parseNumber, promptNumber, parseInt, promptInt, parseFloat, promptFloat } from "./number.js";
 
 /**
  * Parse a JSON value from a string.

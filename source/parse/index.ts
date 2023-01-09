@@ -6,6 +6,7 @@ import { Option, OptionsPropertyFromInput } from "../input/options/index.js";
 import { Flag, isFlag, LongFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
 import { hasHelpFlag, getHelp } from "../help.js";
 import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
+import { mapAllSeries, reduceAllSeries } from "../utils/index.js";
 
 /**
  * Program output in the case that the help or version flags are used.
@@ -99,29 +100,42 @@ function collectArgs<N extends string, I extends Input, R, S extends Commands>(
   };
 }
 
-function parseArgs<N extends string, I extends Input, R, S extends Commands>(
+async function parseArgs<N extends string, I extends Input, R, S extends Commands>(
   input: readonly string[],
   properties: CommandProperties<N, I, R, S>
-): I {
+): Promise<I> {
   const { args, options } = collectArgs(input, properties);
-  const parsedArgs = properties.arguments.map((argument, index) => {
+  const parsedArgs = await mapAllSeries(properties.arguments, async (argument, index) => {
     const isLast: boolean = (index === properties.arguments.length-1);
     const isVariadic = isLast && argument.variadic;
-    const value = args.slice(index, isVariadic ? undefined : index + 1);
-    if(value[0] !== undefined) {
-      return isVariadic ? value.map((item) => argument.parser(item)) : argument.parser(value[0]);
+    const rawValue = args.slice(index, isVariadic ? undefined : index + 1);
+    const parserOptions = {
+      name: argument.name,
+      description: argument.description,
+      variadic: argument.variadic,
+      required: argument.required
+    };
+    const parsedValue = isVariadic ? await mapAllSeries(rawValue, (item) => argument.parser(item, parserOptions)) : await argument.parser(rawValue[0], parserOptions);
+    if(parsedValue === undefined && argument.required) {
+      throw new Error(`Argument "${wrapParameter(argument.name, true, argument.variadic)}" is required.`);
     } else {
-      if(argument.required) {
-        throw new Error(`Argument "${wrapParameter(argument.name, true, argument.variadic)}" is required.`);
-      }
-      return undefined;
+      return parsedValue;
     }
   });
-  const parsedOptions = getOptionEntries(properties).reduce((retval, [fieldName, option]) => {
-    const value = options[fieldName];
-    if(value !== undefined && (typeof value === "string" || value.length > 0)) {
-      retval[fieldName] = Array.isArray(value) ? value.map((item) => option.parser(item)) : option.parser(value);
-    } else if(option.required) {
+  const parsedOptions = await reduceAllSeries(getOptionEntries(properties), async (retval, [fieldName, option]) => {
+    const rawValue = options[fieldName];
+    const parserOptions = {
+      name: option.name,
+      description: option.description,
+      variadic: option.variadic,
+      required: option.required
+    };
+    if(Array.isArray(rawValue)) {
+      retval[fieldName] = await mapAllSeries(rawValue, (item) => option.parser(item, parserOptions));
+    } else {
+      retval[fieldName] = await option.parser(rawValue, parserOptions);
+    }
+    if(retval[fieldName] === undefined && option.required) {
       throw new Error(`Option "${option.longFlag}" must specify a value.`);
     }
     return retval;
@@ -139,14 +153,17 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
     const array = (input ?? process.argv.slice(2));
     const subcommand = array[0];
     if(subcommand && properties.commands?.[subcommand]) {
+      // Run the subcommand
       return (properties.commands[subcommand] as Command).parse(array.slice(1));
     } else if(hasHelpFlag(properties, array)) {
+      // Print the help message
       const help = getHelp(properties);
       if(parseOptions?.silent !== true) {
         console.info(help);
       }
       return { message: help };
     } else if(isActiveVersionOption(properties.version) && hasVersionFlag(properties, array)) {
+      // Print the version message
       const version = getVersion(properties);
       if(version) {
         if(parseOptions?.silent !== true) {
@@ -159,13 +176,17 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
         return error;
       }
     } else {
+      // Run the command
       try {
-        const args = parseArgs(array, properties);
+        // Parse
+        const args = await parseArgs(array, properties);
+        // Run the action
         const result = await Promise.resolve(properties.action(...args as I));
         if(result instanceof Error) {
           // eslint-disable-next-line require-atomic-updates
           process.exitCode = 1;
         }
+        // Format the result
         const string = properties.format(result, args[args.length-1] as OptionsPropertyFromInput<I>);
         if(string !== undefined) {
           console.info(string);
@@ -186,5 +207,5 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
   return parseFn;
 }
 
-export * from "./parser.js";
+export * from "./parser/index.js";
 export type { ShortFlag, LongFlag, Flag } from "./flags.js";

@@ -31,59 +31,117 @@ Clee is a library for creating CLI applications with TypeScript. It is designed 
 ## Contents
 - [Why Clee?](#why-clee)
 - [Installation](#installation)
-- [Structure](#structure)
+- [Overview](#overview)
 - [Usage](#usage)
   - [Base Settings](#base-settings)
   - [Inputs](#inputs)
     - [Arguments](#arguments)
     - [Options](#options)
-    - [Parsers](#parsers)
-  - [Commands](#commands)
-  - [Other Settings](#other-settings)
+  - [Parsers](#parsers)
   - [Action](#action)
-  - [Call](#call)
-  - [Run](#run)
   - [Format](#format)
   - [Parse](#parse)
+  - [Subcommands](#subcommands)
+  - [Other Settings](#other-settings)
   - [Types](#types)
 - [Examples](#examples)
   - [ls](/examples/ls/README.md)
 - [Dependencies](#dependencies)
 - [License](#license)
 
-
-
 ## Why Clee?
 
-- TypeScript native
-- Enables extreme modularity
-- Easy to test
-- Call as an API, or parse arguments as a CLI
+- ✨ TypeScript native
+- 📦 Enables extreme modularity
+- 🧪 Easy to test
+- 🔧 Reusable - call as an API, or parse arguments as a CLI
 
 ### Additional Features
 
 - Built-in parsers for 11 common types
+- Built-in prompters for 5 common types
 - Built-in formatters in 5 common patterns
 - Built-in support for [figlet](https://www.npmjs.com/package/figlet) titles
 - Automatically load version from package.json
 
 ## Installation
 
-```sh
-npm install get-module-pkg
-```
+<details open>
+  <summary>
+    <a href="https://www.npmjs.com/package/clee">
+      <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white" alt="NPM" />
+    </a>
+  </summary>
 
 ```sh
-yarn add get-module-pkg
+npm install clee
 ```
 
-## Structure
+</details>
+<details open>
+  <summary>
+    <a href="https://yarnpkg.com/package/clee">
+      <img src="https://img.shields.io/badge/yarn-2C8EBB?logo=yarn&logoColor=white" alt="Yarn" />
+    </a>
+  </summary>
 
-Clee is heavily inspired by [commander](https://github.com/tj/commander.js). The base unit of Clee is a `Command`. A `Command` is a function that takes arguments and options, and returns a result.
+```sh
+yarn add clee
+```
+
+</details>
+<details open>
+  <summary>
+    <img src="https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white" alt="PNPM" />
+  </summary>
+
+```sh
+pnpm add clee
+```
+
+</details>
+
+## Overview
+
+Clee is heavily inspired by [commander](https://github.com/tj/commander.js). The base unit of Clee is a Command. A Command is a function that takes arguments and options, and returns a result:
+
+```ts
+import clee from "clee";
+
+const command = clee("my-command")
+  .argument("[name]", "Your name")
+  .action((name) => {
+    return `Hello, ${name}!`;
+  });
+```
+
+### Both a Program, and a Function
+
+Commands are reusable as both programs that you can run from the command line, and as functions that you can call from anywhere in your code:
+
+```ts
+// Call as a function
+command("Bob");
+
+// Parse arguments from the command line
+command.parse();
+```
 
 ### Data Flow
 
-A `Command` can be either called directly, or parsed from the command line. When a `Command` is called directly, if follows the following stages:
+Commands have several stages, and each stage can be customized:
+
+- **Parser** - _Converts a raw string to a parsed value_
+- **Action** - _Takes parsed arguments and options, and returns a result_
+- **Formatter** - _Takes the result of an action, and formats it for output to the console_
+
+When a Command is called as a function, if follows the following steps:
+
+---
+
+#### Function Data Flow
+
+<br />
 
 <div align="center">
   <code>[function input]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[function return]</code>
@@ -91,23 +149,23 @@ A `Command` can be either called directly, or parsed from the command line. When
 
 <br />
 
+---
+
 When a command is parsed from the command line, the result is also formatted and then output to the console:
 
+---
+
+#### CLI Program Data Flow
+
+<br />
+
 <div align="center">
-  <code>[cli arguments]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[formatter]</code> -> <code>[cli output]</code>
+  <code>[CLI input]</code> -> <code>[parser]</code> -> <code>[action]</code> -> <code>[formatter]</code> -> <code>[CLI output]</code>
 </div>
 
-#### Parser
+<br />
 
-Each argument and option has a parser, which takes a string an returns a value.
-
-#### Action
-
-An action takes parsed arguments and options, and returns a result.
-
-#### Formatter
-
-A formatter takes the result of an action, and formats it for output to the console.
+---
 
 ## Usage
 
@@ -125,12 +183,12 @@ clee("my-program")
 
 Example help screen:
 ```
-                                                                    
-   ____ ___  __  __      ____  _________  ____ __________ _____ ___ 
+
+   ____ ___  __  __      ____  _________  ____ __________ _____ ___
   / __ `__ \/ / / /_____/ __ \/ ___/ __ \/ __ `/ ___/ __ `/ __ `__ \
  / / / / / / /_/ /_____/ /_/ / /  / /_/ / /_/ / /  / /_/ / / / / / /
-/_/ /_/ /_/\__, /     / .___/_/   \____/\__, /_/   \__,_/_/ /_/ /_/ 
-          /____/     /_/               /____/                       
+/_/ /_/ /_/\__, /     / .___/_/   \____/\__, /_/   \__,_/_/ /_/ /_/
+          /____/     /_/               /____/
 
 Description
 
@@ -202,7 +260,7 @@ Variadic options can be provided by listing multiple values, or by repeating the
 --header value1 --header value2
 ```
 
-#### Parsers
+### Parsers
 
 Arguments and Options can both supply custom parsers. Several are provided with clee:
 
@@ -222,7 +280,69 @@ import {
 } from "clee";
 ```
 
-### Commands
+Additionally, a few prompt parsers are provided. If no value is provided, these will prompt the user for input, using [Enquirer](https://www.npmjs.com/package/enquirer):
+```ts
+import {
+  promptString,
+  promptBoolean,
+  promptNumber,
+  promptInt,
+  promptFloat
+} from "clee";
+```
+
+### Action
+
+A command's action is called when the command is parsed from the command line. The action can be async, and can return a value, which will be passed to the formatter.
+
+```ts
+import clee from "clee";
+
+clee("clee").action(() => {
+  console.log("Hello from clee");
+});
+```
+
+### Format
+
+Commands can also have formatters. Formatters are bypassed if a command is called directly, but are used when the command is parsed from the command line:
+
+```ts
+import clee from "clee";
+
+clee("clee")
+  .action(() => {
+    return ["line 1", "line 2"];
+  })
+  .format((result) => {
+    return result.join("\n");
+  });
+```
+
+Several built-in formatters are also included with clee:
+```ts
+import {
+  formatDefault,
+  formatBuffer,
+  formatJSON,
+  formatJSONPretty,
+  formatStringsToLines
+} from "clee";
+```
+
+### Parse
+
+By default, parse will use `process.argv.slice(2)`, but a custom array can also be provided:
+
+```ts
+// Read from `process.argv.slice(2)`:
+cmd.parse();
+
+// Provide custom arguments:
+cmd.parse(["one", "two", "three"]);
+```
+
+### Subcommands
 
 Commands can also be nested, and have their own arguments, options, actions, and sub-commands.
 
@@ -236,6 +356,23 @@ const sub = clee("sub")
 
 clee("my-program")
   .command(sub);
+```
+
+#### Run
+Run allows you to run a subcommand from a parent command:
+
+```ts
+import clee from "clee";
+
+const sub = clee("sub")
+  .action(() => {
+    console.log("Hello from sub command");
+  });
+
+const cmd = clee("my-program")
+  .command(sub);
+
+cmd.run("sub"); // Hello from sub command
 ```
 
 ### Other Settings
@@ -277,105 +414,6 @@ clee("my-program")
 
 By default, `-v` and `--version` are used.
 
-### Action
-
-A command's action is called when the command is parsed from the command line. The action can be async, and can return a value, which will be passed to the formatter.
-
-```ts
-import clee from "clee";
-
-clee("clee").action(() => {
-  console.log("Hello from clee");
-});
-```
-
-### Call
-
-A command can be called directly as a function. The arguments should match the inputs to `action`:
-
-```ts
-import clee from "clee";
-
-const cmd = clee("clee")
-  .argument("<name>")
-  .option("-e", "--exclaimation", "Include an exclaimation point")
-  .action((name, options) => {
-    return `Hello ${name}${options.exclaimation ? "!" : ""}`;
-  });
-
-cmd("World", { exclaimation: true }); // Hello World!
-```
-
-### Format
-
-Commands can also have formatters. Formatters are bypassed if a command is called directly, but are used when the command is parsed from the command line:
-
-```ts
-import clee from "clee";
-
-clee("clee")
-  .action(() => {
-    return ["line 1", "line 2"];
-  })
-  .format((result) => {
-    return result.join("\n");
-  });
-```
-
-Several built-in formatters are also included with clee:
-```ts
-import {
-  formatDefault,
-  formatBuffer,
-  formatJSON,
-  formatJSONPretty,
-  formatStringsToLines
-} from "clee";
-```
-
-### Run
-Run allows you to run a subcommand from a parent command:
-
-```ts
-import clee from "clee";
-
-const sub = clee("sub")
-  .action(() => {
-    console.log("Hello from sub command");
-  });
-
-const cmd = clee("my-program")
-  .command(sub);
-
-cmd.run("sub"); // Hello from sub command
-```
-
-### Parse
-By default, parse will use `process.argv.slice(2)`, but a custom array can also be provided:
-
-```ts
-import clee from "clee";
-
-const cmd = clee("clee")
-  .argument("<lines...>")
-  .action((lines) => {
-    return lines.map((line) => `${line}.`)
-  })
-  .format((result) => {
-    return result.join("\n");
-  });
-
-cmd.parse(["one", "two", "three"]);
-
-// Output:
-// one.
-// two.
-// three.
-
-// To reads from process.argv.slice(2):
-// cmd.parse(); 
-```
-
 ### Types
 
 Types are also provided for deriving various types from a `Command`:
@@ -400,35 +438,28 @@ type SubCommands = CommandSubCommands<typeof command>;
 
 ## Examples
 
-- [ls](/examples/ls/README.md)
+- [ls](/examples/ls/README.md) - A simple ls program
 
 <br />
 
 <h2 id="dependencies">Dependencies<a href="https://www.npmjs.com/package/get-module-pkg?activeTab=dependencies"><img align="right" alt="dependencies" src="https://img.shields.io/hackage-deps/v/clee.svg"></a></h2>
 
+- [enquirer](https://www.npmjs.com/package/enquirer): Stylish, intuitive and user-friendly prompt system. Fast and lightweight enough for small projects, powerful and extensible enough for the most advanced use cases.
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
-- [type-fest](https://www.npmjs.com/package/type-fest): A collection of essential TypeScript types
+- [typed-case](https://www.npmjs.com/package/typed-case): Convert between typesafe string casings
 - [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 
 <h3 id="dev-dependencies">Dev Dependencies</h3>
 
-- [@swc/core](https://www.npmjs.com/package/@swc/core): Super-fast alternative for babel
-- [@swc/jest](https://www.npmjs.com/package/@swc/jest): Swc integration for jest
 - [@types/figlet](https://www.npmjs.com/package/@types/figlet): TypeScript definitions for figlet
 - [@types/node](https://www.npmjs.com/package/@types/node): TypeScript definitions for Node.js
+- [autorepo](https://www.npmjs.com/package/autorepo): Autorepo abstracts away your dev dependencies, providing a single command to run all of your scripts.
 - [chalk](https://www.npmjs.com/package/chalk): Terminal string styling done right
-- [eslint](https://www.npmjs.com/package/eslint): An AST-based pattern checker for JavaScript.
-- [eslint-config-bob](https://www.npmjs.com/package/eslint-config-bob): ESLint configuration for packages built with @bconnorwhite/bob
-- [jest](https://www.npmjs.com/package/jest): Delightful JavaScript Testing.
-- [ts-node](https://www.npmjs.com/package/ts-node): TypeScript execution environment and REPL for node.js, with source map support
-- [tsd](https://www.npmjs.com/package/tsd): Check TypeScript type definitions
-- [typescript](https://www.npmjs.com/package/typescript): TypeScript is a language for application scale JavaScript development
 
 <br />
 
-
 <h2 id="license">License <a href="https://opensource.org/licenses/MIT"><img align="right" alt="license" src="https://img.shields.io/npm/l/clee.svg"></a></h2>
 
-[MIT](https://opensource.org/licenses/MIT)
+[MIT](https://opensource.org/licenses/MIT) - _MIT License_
 

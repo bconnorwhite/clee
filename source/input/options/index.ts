@@ -24,7 +24,7 @@ export type OptionSkin<L extends LongFlag = LongFlag> = {
 export type Option<L extends LongFlag, V> = OptionSkin<L> & Parsable<V> & {
   required: boolean;
   variadic: boolean;
-  name?: string;
+  name: string;
 };
 
 /**
