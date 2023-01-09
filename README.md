@@ -1,5 +1,6 @@
 <div align="center">
   <h1>clee</h1>
+  <img alt="Platform: Node" src="https://img.shields.io/badge/Node-%23339933?logo=node.js&logoColor=white" />
   <a href="https://npmjs.com/package/clee">
     <img alt="npm" src="https://img.shields.io/npm/v/clee.svg">
   </a>
@@ -55,13 +56,13 @@ Clee is a library for creating CLI applications with TypeScript. It is designed 
 - 📦 Enables extreme modularity
 - 🧪 Easy to test
 - 🔧 Reusable - call as an API, or parse arguments as a CLI
+- 🤔 Optional user prompting for missing arguments
 
 ### Additional Features
 
-- Built-in parsers for 11 common types
-- Built-in prompters for 5 common types
-- Built-in formatters in 5 common patterns
-- Built-in support for [figlet](https://www.npmjs.com/package/figlet) titles
+- Includes parsers for 11 common types
+- Includes formatters in 5 common patterns
+- Includes configurable [figlet](https://www.npmjs.com/package/figlet) titles
 - Automatically load version from package.json
 
 ## Installation
@@ -442,7 +443,7 @@ type SubCommands = CommandSubCommands<typeof command>;
 
 <br />
 
-<h2 id="dependencies">Dependencies<a href="https://www.npmjs.com/package/get-module-pkg?activeTab=dependencies"><img align="right" alt="dependencies" src="https://img.shields.io/hackage-deps/v/clee.svg"></a></h2>
+<h2 id="dependencies">Dependencies<a href="https://www.npmjs.com/package/clee?activeTab=dependencies"><img align="right" alt="dependencies" src="https://img.shields.io/librariesio/release/npm/clee.svg"></a></h2>
 
 - [enquirer](https://www.npmjs.com/package/enquirer): Stylish, intuitive and user-friendly prompt system. Fast and lightweight enough for small projects, powerful and extensible enough for the most advanced use cases.
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
@@ -461,5 +462,5 @@ type SubCommands = CommandSubCommands<typeof command>;
 
 <h2 id="license">License <a href="https://opensource.org/licenses/MIT"><img align="right" alt="license" src="https://img.shields.io/npm/l/clee.svg"></a></h2>
 
-[MIT](https://opensource.org/licenses/MIT) - _MIT License_
+[MIT](https://opensource.org/licenses/MIT) - _The MIT License_
 
