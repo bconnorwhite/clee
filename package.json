@@ -40,7 +40,7 @@
   "dependencies": {
     "figlet": "^1.5.2",
     "get-module-pkg": "^1.0.1",
-    "type-fest": "^3.5.1",
+    "typed-case": "^1.0.1",
     "types-json": "^1.2.2"
   },
   "devDependencies": {

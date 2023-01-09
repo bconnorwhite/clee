@@ -1,8 +1,8 @@
 /* eslint-disable max-depth */
+import { toCamelCase } from "typed-case";
 import { Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
 import { Option, OptionsPropertyFromInput } from "../input/options/index.js";
-import { toCamelCase } from "../input/options/casing.js";
 import { Flag, isFlag, LongFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
 import { hasHelpFlag, getHelp } from "../help.js";
 import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
@@ -17,9 +17,9 @@ export type ParseOutput = {
 export type ParseError = Error;
 
 /**
- * If the command was run successfully, returns the resulting value.  
- * If the command failed with an error, returns the error.  
- * If the help or version flag was used, returns the help or version message.  
+ * If the command was run successfully, returns the resulting value.
+ * If the command failed with an error, returns the error.
+ * If the help or version flag was used, returns the help or version message.
  */
 export type ParseResult = ParseOutput | ParseError;
 
