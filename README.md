@@ -448,6 +448,7 @@ type SubCommands = CommandSubCommands<typeof command>;
 - [enquirer](https://www.npmjs.com/package/enquirer): Stylish, intuitive and user-friendly prompt system. Fast and lightweight enough for small projects, powerful and extensible enough for the most advanced use cases.
 - [figlet](https://www.npmjs.com/package/figlet): Creates ASCII Art from text. A full implementation of the FIGfont spec.
 - [get-module-pkg](https://www.npmjs.com/package/get-module-pkg): Get your module's package.json without importing it
+- [read-boolean](https://www.npmjs.com/package/read-boolean): A simple utility for parsing boolean values from strings.
 - [typed-case](https://www.npmjs.com/package/typed-case): Convert between typesafe string casings
 - [types-json](https://www.npmjs.com/package/types-json): Type checking for JSON objects
 

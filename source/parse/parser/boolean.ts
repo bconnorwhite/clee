@@ -1,25 +1,23 @@
 import enquirer from "enquirer";
+import { readBoolean } from "read-boolean";
 import { ParserOptions } from "./index.js";
 
 /**
  * Parse a boolean from a string.
  * True values include:
  * ```
- * true, "true", "t", "yes", "y", "1"
+ * "true", "t", "yes", "y", "1"
  * ```
  * False values include:
  * ```
- * false, "false", "f", "no", "n", "0"
+ * "false", "f", "no", "n", "0"
  * ```
  * Other values will throw an error.
  */
 export function parseBoolean(string: string | undefined): boolean | undefined {
-  if(string === undefined) {
-    return undefined;
-  } else if(["true", "t", "yes", "y", "1"].includes(string.toLowerCase())) {
-    return true;
-  } else if(["false", "f", "no", "n", "0"].includes(string.toLowerCase())) {
-    return false;
+  const parsed = readBoolean(string, { extended: true });
+  if(parsed !== undefined) {
+    return parsed;
   } else {
     throw new Error("Unable to parse boolean.");
   }

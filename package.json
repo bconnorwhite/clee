@@ -41,6 +41,7 @@
     "enquirer": "^2.3.6",
     "figlet": "^1.5.2",
     "get-module-pkg": "^1.0.1",
+    "read-boolean": "^2.0.0",
     "typed-case": "^1.0.1",
     "types-json": "^1.2.2"
   },
