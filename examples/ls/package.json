@@ -11,9 +11,7 @@
     "ls": "source/index.ts"
   },
   "scripts": {
-    "ls": "node --no-warnings --loader ts-node/esm source/index.ts",
-    "lint": "eslint source --ext .ts",
-    "typecheck": "tsc source/**/*.ts --noEmit --esModuleInterop"
+    "ls": "node --no-warnings --loader ts-node/esm source/index.ts"
   },
   "dependencies": {
     "clee": "link:../../"

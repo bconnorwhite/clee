@@ -11,7 +11,7 @@ clee("ls")
   .option("-s", "--silent", "Suppress normal output.")
   .version(import.meta.url)
   .action(async (path, options): Promise<Dirent[]> => {
-    const directory = path ? await path : await parseDirectory(process.cwd());
+    const directory = (path ? await path : await parseDirectory(process.cwd())) ?? [];
     if(options.reverse) {
       directory.reverse();
     }
@@ -21,8 +21,7 @@ clee("ls")
       return directory.filter((item) => !item.name.startsWith("."));
     }
   })
-  .format(async (result: Promise<Dirent[]>, options) => {
-    const entries = await result;
+  .format((entries: Dirent[], options) => {
     const maxLength = entries.reduce((retval, item) => {
       return Math.max(retval, item.name.length);
     }, 0);
