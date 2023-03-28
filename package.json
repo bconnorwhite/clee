@@ -2,15 +2,18 @@
   "name": "clee",
   "version": "0.2.3",
   "description": "Create CLI applications with glee 🎉",
-  "main": ".auto/build/index.js",
-  "author": "Connor White",
   "license": "MIT",
   "private": false,
-  "type": "module",
+  "author": "Connor White",
+  "contributors": [
+    "Connor White"
+  ],
+  "homepage": "https://github.com/bconnorwhite/clee#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bconnorwhite/clee.git"
   },
+  "bugs": "https://github.com/bconnorwhite/clee/issues",
   "keywords": [
     "cli",
     "terminal",
@@ -20,6 +23,8 @@
     "commander",
     "terminal"
   ],
+  "type": "module",
+  "main": ".auto/build/index.js",
   "exports": "./.auto/build/index.js",
   "types": ".auto/build/index.d.ts",
   "files": [
@@ -48,7 +53,7 @@
   "devDependencies": {
     "@types/figlet": "^1.5.5",
     "@types/node": "^18.11.9",
-    "autorepo": "^0.1.7",
+    "autorepo": "^0.1.9",
     "chalk": "^5.2.0"
   },
   "eslintConfig": {
