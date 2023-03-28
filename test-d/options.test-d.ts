@@ -21,7 +21,8 @@ const cmd3 = clee("test")
 expectType<{ flag: boolean | undefined; }>(cmd3);
 
 const cmd4 = clee("test")
-  .option("--path", parsePath)
+  .description("Test")
+  .option("--path", "Test", parsePath)
   .option("--boolean", "A boolean flag.")
   .action((options) => options);
 
