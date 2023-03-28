@@ -1,3 +1,12 @@
+## [0.2.5](https://github.com/bconnorwhite/clee/compare/v0.2.4...v0.2.5) (2023-03-28)
+
+
+### Features
+
+* parseCSV ([4c98a2d](https://github.com/bconnorwhite/clee/commit/4c98a2d28f5f6904862c093651b0408f2f55ff59))
+
+
+
 ## [0.2.4](https://github.com/bconnorwhite/clee/compare/v0.2.3...v0.2.4) (2023-03-28)
 
 
