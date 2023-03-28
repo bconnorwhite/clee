@@ -1,6 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
-import { formatDefault } from "../source/format.js";
+import clee, { formatDefault, parseBoolean } from "../source/index.js";
 
 describe("formatDefault", () => {
   test("undefined", () => {
@@ -18,5 +18,40 @@ describe("formatDefault", () => {
   test("error", () => {
     const result = formatDefault(new Error("test"));
     expect(result).toStrictEqual("test");
+  });
+});
+
+describe("format output sync", () => {
+  const cmdSync = clee("clee")
+    .option("-f", "--flag", "Description", parseBoolean)
+    .action((options) => {
+      return options.flag;
+    })
+    .format((result) => {
+      return `Result: ${result}`;
+    });
+  test("action", async () => {
+    const result = await cmdSync.parse(["--flag=true"]);
+    expect(result).toStrictEqual({
+      message: "Result: true"
+    });
+  });
+});
+
+describe("format output async", () => {
+  const cmdAsync = clee("clee")
+    .option("-f", "--flag", "Description", (flag: string | undefined) => Promise.resolve(parseBoolean(flag)))
+    .action(async (options) => {
+      const flag = await options.flag;
+      return flag;
+    })
+    .format((result) => {
+      return `Result: ${result}`;
+    });
+  test("action", async () => {
+    const result = await cmdAsync.parse(["--flag=true"]);
+    expect(result).toStrictEqual({
+      message: "Result: true"
+    });
   });
 });

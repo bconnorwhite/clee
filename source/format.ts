@@ -4,10 +4,10 @@ import { Command, CommandProperties, getCommand, Commands } from "./command.js";
 import { Input, OptionsPropertyFromInput } from "./input/index.js";
 import { Options } from "./input/options/index.js";
 
-export type Formatter<R, O> = (result: R, options?: O) => string | undefined;
+export type Formatter<R, O> = (result: Awaited<R>, options?: O) => string | undefined;
 
 function silenceable<R, O>(formatter: Formatter<R, O>, option = "silent") {
-  return function formatSilenceable(result: R, options?: O) {
+  return function formatSilenceable(result: Awaited<R>, options?: O) {
     if(options && (options as Options)[option]) {
       return undefined;
     } else {
