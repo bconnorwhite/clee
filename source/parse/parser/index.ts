@@ -23,7 +23,7 @@ export type Parsable<V=unknown> = {
   parser: Parser<V>;
 };
 
-export { parseString, promptString } from "./string.js";
+export { parseString, promptString, parseCSV } from "./string.js";
 export { parseBoolean, promptBoolean } from "./boolean.js";
 export { parseNumber, promptNumber, parseInt, promptInt, parseFloat, promptFloat } from "./number.js";
 

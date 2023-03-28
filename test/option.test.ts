@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
 import clee, { parseBoolean } from "../source/index.js";
-import { parseInt } from "../source/parse/parser/index.js";
+import { parseCSV, parseInt } from "../source/parse/parser/index.js";
 
 describe("option", () => {
   describe("boolean", () => {
@@ -31,6 +31,19 @@ describe("option", () => {
       const result = await cmd.parse(["-h", "1", "2", "3"]);
       expect(result).toStrictEqual({
         message: "Usage: clee [options]\n\nOptions:\n  -f, --flag  Description\n  -h, --help  Display help for command"
+      });
+    });
+  });
+  describe("csv", () => {
+    const cmd = clee("clee")
+      .option("-f", "--flag", "Description", parseCSV)
+      .action((options) => {
+        return options.flag;
+      });
+    test("action", async () => {
+      const result = await cmd.parse(["-f=1,2,3"]);
+      expect(result).toStrictEqual({
+        message: `[ ${chalk.green("'1'")}, ${chalk.green("'2'")}, ${chalk.green("'3'")} ]`
       });
     });
   });

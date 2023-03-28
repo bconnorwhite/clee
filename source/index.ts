@@ -45,7 +45,8 @@ export {
   parseURL,
   parsePath,
   parseFile,
-  parseDirectory
+  parseDirectory,
+  parseCSV
 } from "./parse/index.js";
 export type { ParseResult, ParseError, ParseOutput } from "./parse/index.js";
 

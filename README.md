@@ -277,7 +277,8 @@ import {
   parseURL,
   parsePath,
   parseFile,
-  parseDirectory
+  parseDirectory,
+  parseCSV
 } from "clee";
 ```
 

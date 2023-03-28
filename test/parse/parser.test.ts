@@ -2,6 +2,7 @@ import { describe, test, expect } from "@jest/globals";
 import path from "node:path";
 import {
   parseString,
+  parseCSV,
   parseBoolean,
   parseNumber,
   parseInt,
@@ -14,6 +15,30 @@ import {
 
 test("parseString", () => {
   expect(parseString("hello")).toBe("hello");
+});
+
+describe("parseCSV", () => {
+  test("undefined", () => {
+    expect(parseCSV(undefined)).toBe(undefined);
+  });
+  test("empty", () => {
+    expect(parseCSV("")).toEqual([""]);
+  });
+  test("simple", () => {
+    expect(parseCSV("hello,world")).toEqual(["hello", "world"]);
+  });
+  test("outer quoted", () => {
+    expect(parseCSV("hello,\"w,o,r,l,d\"")).toEqual(["hello", "w,o,r,l,d"]);
+  });
+  test("inner quoted", () => {
+    expect(parseCSV("hello,Here is an \"inner, example\"")).toEqual(["hello", "Here is an \"inner, example\""]);
+  });
+  test("nested quoted", () => {
+    expect(parseCSV("hello,Here is a \"nested\\\", \\\"example\"")).toEqual(["hello", "Here is a \"nested\\\", \\\"example\""]);
+  });
+  test("outer quoted with single escape", () => {
+    expect(parseCSV("hello,\"w,o,r\\\",l,d\"")).toEqual(["hello", "w,o,r\\\",l,d"]);
+  });
 });
 
 describe("parseBoolean", () => {
