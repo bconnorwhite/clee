@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
 import clee, { parseBoolean } from "../source/index.js";
-import { parseInt } from "../source/parse/parser.js";
+import { parseInt } from "../source/parse/parser/index.js";
 
 describe("option", () => {
   describe("boolean", () => {
@@ -66,6 +66,25 @@ describe("option", () => {
       const result = await cmd.parse(["-f=yes"]);
       expect(result).toStrictEqual({
         message: chalk.yellow("true")
+      });
+    });
+  });
+  describe("default value parser", () => {
+    const cmd = clee("clee")
+      .option("-f", "--flag", "Description", (value: string | undefined) => value ?? "default")
+      .action((options) => {
+        return options.flag;
+      });
+    test("action without value", async () => {
+      const result = await cmd.parse([]);
+      expect(result).toStrictEqual({
+        message: "default"
+      });
+    });
+    test("action with value", async () => {
+      const result = await cmd.parse(["-f=custom"]);
+      expect(result).toStrictEqual({
+        message: "custom"
       });
     });
   });

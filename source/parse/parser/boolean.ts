@@ -19,7 +19,7 @@ export function parseBoolean(string: string | undefined): boolean | undefined {
   if(parsed !== undefined) {
     return parsed;
   } else {
-    throw new Error("Unable to parse boolean.");
+    return undefined;
   }
 }
 

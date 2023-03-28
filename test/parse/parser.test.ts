@@ -10,8 +10,7 @@ import {
   parseURL,
   parsePath,
   parseDate
-} from "../../source/parse/parser.js";
-
+} from "../../source/parse/parser/index.js";
 
 test("parseString", () => {
   expect(parseString("hello")).toBe("hello");
@@ -34,7 +33,7 @@ describe("parseBoolean", () => {
     expect(parseBoolean(string)).toBe(expected);
   });
   test("throws", () => {
-    expect(() => parseBoolean("hello")).toThrow("Unable to parse boolean.");
+    expect(parseBoolean("hello")).toBe(undefined);
   });
 });
 

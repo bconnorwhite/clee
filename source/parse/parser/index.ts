@@ -30,11 +30,15 @@ export { parseNumber, promptNumber, parseInt, promptInt, parseFloat, promptFloat
 /**
  * Parse a JSON value from a string.
  */
-export function parseJSON(string: string): number {
-  try {
-    return JSON.parse(string);
-  } catch(e) {
-    throw new Error("Unable to parse JSON.");
+export function parseJSON(string: string | undefined): string | undefined {
+  if(string !== undefined) {
+    try {
+      return JSON.parse(string);
+    } catch(e) {
+      throw new Error("Unable to parse JSON.");
+    }
+  } else {
+    return undefined;
   }
 }
 
@@ -47,12 +51,16 @@ export function parseJSON(string: string): number {
  * Unix:      "1640995200000"
  * ```
  */
-export function parseDate(string: string): Date {
-  const date = !isNaN(Number(string)) ? new Date(Number(string)) : new Date(string);
-  if(Number.isNaN(date.getTime())) {
-    throw new Error("Unable to parse Date.");
+export function parseDate(string: string | undefined): Date | undefined {
+  if(string !== undefined) {
+    const date = !isNaN(Number(string)) ? new Date(Number(string)) : new Date(string);
+    if(Number.isNaN(date.getTime())) {
+      throw new Error("Unable to parse Date.");
+    } else {
+      return date;
+    }
   } else {
-    return date;
+    return undefined;
   }
 }
 
@@ -60,11 +68,15 @@ export function parseDate(string: string): Date {
  * Parse a URL from a string.
  * Valid input formats include any valid input to `new URL()`.
  */
-export function parseURL(string: string): URL {
-  try {
-    return new URL(string);
-  } catch(e) {
-    throw new Error("Unable to parse URL.");
+export function parseURL(string: string | undefined): URL | undefined {
+  if(string !== undefined) {
+    try {
+      return new URL(string);
+    } catch(e) {
+      throw new Error("Unable to parse URL.");
+    }
+  } else {
+    return undefined;
   }
 }
 
@@ -81,28 +93,40 @@ export type Path = {
  * File URL:  "file:///home/user/file.txt"
  * ```
  */
-export function parsePath(string: string): Path {
-  const body = string.startsWith("file://") ? string.substring(7) : string;
-  const absolute = resolve(body);
-  return {
-    absolute,
-    relative: relative(process.cwd(), absolute),
-    ...parse(absolute)
-  };
+export function parsePath(string: string | undefined): Path | undefined {
+  if(string !== undefined) {
+    const body = string.startsWith("file://") ? string.substring(7) : string;
+    const absolute = resolve(body);
+    return {
+      absolute,
+      relative: relative(process.cwd(), absolute),
+      ...parse(absolute)
+    };
+  } else {
+    return undefined;
+  }
 }
 
 /**
  * Parse a file from a path name.
  */
-export function parseFile(path: string): Promise<Buffer> {
-  const { absolute } = parsePath(path);
-  return fs.readFile(absolute);
+export function parseFile(path: string | undefined): Promise<Buffer | undefined> {
+  const parsedPath = parsePath(path);
+  if(parsedPath?.absolute) {
+    return fs.readFile(parsedPath.absolute);
+  } else {
+    return Promise.resolve(undefined);
+  }
 }
 
 /**
  * Parse a directory's entries from a directory path.
  */
-export function parseDirectory(path: string): Promise<Dirent[]> {
-  const { absolute } = parsePath(path);
-  return fs.readdir(absolute, { withFileTypes: true });
+export function parseDirectory(path: string | undefined): Promise<Dirent[] | undefined> {
+  const parsedPath = parsePath(path);
+  if(parsedPath !== undefined) {
+    return fs.readdir(parsedPath.absolute, { withFileTypes: true });
+  } else {
+    return Promise.resolve(undefined);
+  }
 }
