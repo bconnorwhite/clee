@@ -56,7 +56,9 @@ type OptionWithFieldName<L extends LongFlag, V> = {
  */
 type MergeOptions<O extends Options | undefined, L extends LongFlag, V, Q extends boolean> = {
   [K in keyof (O extends undefined ? OptionWithFieldName<L, V> : O & OptionWithFieldName<L, V>)]: K extends keyof OptionWithFieldName<L, V>
-    ? Q extends true ? OptionWithFieldName<L, V>[K] : OptionWithFieldName<L, V>[K] | undefined
+    ? Q extends true
+      ? Defined<OptionWithFieldName<L, V>[K]>
+      : OptionWithFieldName<L, V>[K]
     : K extends keyof O ? O[K] : never;
 };
 
@@ -69,29 +71,29 @@ function isFunction(value: unknown): value is (...args: any[]) => any {
  */
 export function getOptionFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
   // Long Flag Only Signatures
-  function optionFn<L extends LongFlag, V=boolean>(
+  function optionFn<L extends LongFlag, V=boolean | undefined>(
     longFlag: L, parser?: Parser<V>
   ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean | undefined>(
     longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean | undefined>(
     longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, V=boolean>(
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, V=boolean | undefined>(
     longFlag: L, description: string | undefined, parser?: Parser<V>
   ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   // Short Flag Signatures
-  function optionFn<L extends LongFlag, V=boolean>(
+  function optionFn<L extends LongFlag, V=boolean | undefined>(
     shortFlag: ShortFlag, longFlag: L, parser?: Parser<V>
   ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean | undefined>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean | undefined>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
-  function optionFn<L extends LongFlag, V=boolean>(
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>;
+  function optionFn<L extends LongFlag, V=boolean | undefined>(
     shortFlag: ShortFlag, longFlag: L, description: string | undefined, parser?: Parser<V>
   ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   // Function Implementation
@@ -101,19 +103,19 @@ export function getOptionFn<N extends string, A extends Arguments, O extends Opt
     c?: P | string | undefined | Parser<V>,
     d?: string | undefined | Parser<V>,
     e?: Parser<V>
-  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S> {
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S> {
     const stack = [a, b, c, d, e];
     const shortFlag = (isShortFlag(stack[0]) ? stack.shift() : undefined) as ShortFlag | undefined;
     const longFlag = stack.shift() as L;
     const parameter = (isParameter(stack[0]) ? stack.shift() : undefined) as P | undefined;
     const description = (typeof stack[0] === "string" ? stack.shift() : undefined) as string | undefined;
     const parser = (isFunction(stack[0]) ? stack.shift() : parseBoolean) as Parser<V>;
-    return getCommand<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>({
+    return getCommand<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R>,
+      action: properties.action as unknown as Action<A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R>,
       format: properties.format as unknown as Formatter<
         R,
-        MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+        MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>>,
       arguments: properties.arguments,
       options: {
         ...(properties.options ?? {}),
@@ -126,7 +128,7 @@ export function getOptionFn<N extends string, A extends Arguments, O extends Opt
           name: parameter ? getParameterName(parameter) : undefined,
           parser
         }
-      } as OptionsProperty<MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+      } as OptionsProperty<MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>>,
       help: {
         shortFlag: properties.help.shortFlag === shortFlag ? undefined : properties.help.shortFlag,
         longFlag: properties.help.longFlag === longFlag ? undefined : properties.help.longFlag,

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable max-depth */
 import { Arguments, Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";

@@ -10,7 +10,8 @@ import {
   parseJSON,
   parseURL,
   parsePath,
-  parseDate
+  parseDate,
+  parseCWD
 } from "../../source/parse/parser/index.js";
 
 test("parseString", () => {
@@ -178,5 +179,13 @@ describe("parsePath", () => {
   ]);
   grid("%s is %s", (string, expected) => {
     expect(parsePath(string)).toEqual(expected);
+  });
+});
+
+describe("parseCWD", () => {
+  test("cwd", () => {
+    const cwd = process.cwd();
+    expect(parseCWD("test").endsWith("/test")).toBe(true);
+    process.chdir(cwd);
   });
 });

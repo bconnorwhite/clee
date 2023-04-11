@@ -43,10 +43,12 @@ export {
   parseJSON,
   parseDate,
   parseURL,
+  parseCWD,
   parsePath,
   parseFile,
   parseDirectory,
-  parseCSV
+  parseCSV,
+  parsePathCSV
 } from "./parse/index.js";
 export type { ParseResult, ParseError, ParseOutput, Path } from "./parse/index.js";
 

@@ -14,8 +14,8 @@ export type ParserOptions = {
  * A function to parse argument values from an input string.
  */
 export type Parser<V> =
-  | ((value: string | undefined) => V | undefined)
-  | ((value: string | undefined, options: ParserOptions) => V | undefined);
+  | ((value: string | undefined) => V)
+  | ((value: string | undefined, options: ParserOptions) => V);
 
 /**
  * An object that is parsable as an argument.
@@ -84,6 +84,17 @@ export function parseURL(string: string | undefined): URL | undefined {
 export type Path = {
   [K in "absolute" | "relative" | keyof ParsedPath]: K extends keyof ParsedPath ? ParsedPath[K] : string;
 };
+
+/**
+ * Set the current working directory.
+ * Always returns the current working directory.
+ */
+export function parseCWD(string: string | undefined): string {
+  if(string !== undefined) {
+    process.chdir(string);
+  }
+  return process.cwd();
+}
 
 /**
  * Parse a path from a string.

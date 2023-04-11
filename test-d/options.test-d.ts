@@ -1,5 +1,5 @@
 import { expectType } from "tsd";
-import clee, { Option, parsePath } from "../source/index.js";
+import clee, { Option, parsePath, parseCWD } from "../source/index.js";
 import { Path } from "../source/parse/index.js";
 
 const cmd = clee("test")
@@ -27,3 +27,9 @@ const cmd4 = clee("test")
   .action((options) => options);
 
 expectType<{ path: Option<"--path", Path | undefined>; boolean: Option<"--boolean", boolean | undefined>; }>(cmd4.options());
+
+const cmd5 = clee("test")
+  .option("--cwd", parseCWD)
+  .action((options) => options)({ cwd: "test" });
+
+expectType<{ cwd: string; }>(cmd5);
