@@ -5,7 +5,7 @@ import { ParserOptions } from "./index.js";
  * Pass through function that returns the input value.
  */
 export function parseString(string: string | undefined): string | undefined {
-  return string === undefined ? undefined : string;
+  return string;
 }
 
 /**

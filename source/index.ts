@@ -7,7 +7,7 @@ export default function clee<N extends string>(name: N): Command<N> {
     action: () => {},
     format: formatDefault,
     commands: undefined,
-    arguments: [],
+    arguments: [] as [],
     options: undefined,
     help: {
       shortFlag: "-h",

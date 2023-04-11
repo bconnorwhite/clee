@@ -1,10 +1,10 @@
 import path from "node:path";
 import { getVersionSync } from "get-module-pkg";
 import { Command, CommandProperties, getCommand, Commands } from "./command.js";
-import { Input } from "./input/index.js";
+import { Arguments } from "./input/index.js";
 import { ShortFlag, LongFlag } from "./parse/index.js";
 import { isShortFlag, isLongFlag } from "./parse/flags.js";
-import { OptionSkin } from "./input/options/index.js";
+import { Options, OptionSkin } from "./input/options/index.js";
 
 type AbsolutePath = `file://${string}` | `/${string}` | `${string}:\\${string}` | `\\${string}`;
 
@@ -40,15 +40,15 @@ function isAbsolutePath(string: string) {
 /**
  * Returns true if a help flag is present in the arguments.
  */
-export function hasVersionFlag<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>,
+export function hasVersionFlag<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>,
   args: readonly string[]
 ): boolean {
   const versionFlags = [properties.version.shortFlag, properties.version.longFlag].filter((flag) => flag !== undefined);
   return versionFlags.some((flag) => flag !== undefined && args.includes(flag));
 }
 
-export function getVersion<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string | undefined {
+export function getVersion<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): string | undefined {
   if(isExplicitVersionOption(properties.version)) {
     return properties.version.number;
   } else if(isRelativeVersionOption(properties.version)) {
@@ -58,12 +58,12 @@ export function getVersion<N extends string, I extends Input, R, S extends Comma
   }
 }
 
-export function getVersionFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
-  function versionFn(number: string, longFlag?: LongFlag, description?: string): Command<N, I, R, S>;
-  function versionFn(number: string, shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, I, R, S>;
-  function versionFn(relativeTo: AbsolutePath, longFlag?: LongFlag, description?: string): Command<N, I, R, S>;
-  function versionFn(relativeTo: AbsolutePath, shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, I, R, S>;
-  function versionFn(...args: (string | undefined)[]): Command<N, I, R, S> {
+export function getVersionFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
+  function versionFn(number: string, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function versionFn(number: string, shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function versionFn(relativeTo: AbsolutePath, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function versionFn(relativeTo: AbsolutePath, shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function versionFn(...args: (string | undefined)[]): Command<N, A, O, R, S> {
     const version = isAbsolutePath(args[0] as string) ? { relativeTo: args.shift() as AbsolutePath } : { number: args.shift() as string };
     return getCommand({
       ...properties,

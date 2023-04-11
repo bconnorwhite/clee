@@ -9,9 +9,9 @@ const cmd = clee("cmd")
   .command(sub1)
   .command(sub2);
 
-type Expected = Command<"cmd", [], void, {
-  sub1: Command<"sub1", [], void, undefined>;
-  sub2: Command<"sub2", [], void, undefined>;
+type Expected = Command<"cmd", [], object, void, {
+  sub1: Command<"sub1", [], object, void, undefined>;
+  sub2: Command<"sub2", [], object, void, undefined>;
 }>;
 
 expectType<Expected>(cmd);

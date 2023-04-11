@@ -1,11 +1,13 @@
+import { Arguments } from "./arguments.js";
+import { Options } from "./options/index.js";
 
-export type Input = Array<unknown>;
+export type Input<A extends Arguments=[], O extends Options=Options> = keyof O extends never ? [...A] : [...A, O];
 
 export { getArgumentFn, getArgumentsFn } from "./arguments.js";
 export { getOptionFn, getOptionsFn } from "./options/index.js";
 
-export type { ArgumentsPropertyFromInput, Argument } from "./arguments.js";
-export type { OptionsPropertyFromInput, Option } from "./options/index.js";
+export type { ArgumentsProperty, Argument, Arguments } from "./arguments.js";
+export type { OptionsProperty, Option, Options } from "./options/index.js";
 
 export type RequiredParameter = `<${string}>`;
 export type OptionalParameter = `[${string}]`;

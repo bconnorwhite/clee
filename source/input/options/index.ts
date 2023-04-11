@@ -2,15 +2,16 @@ import { CommandProperties, getCommand, Command, Commands } from "../../command.
 import { Action } from "../../action.js";
 import { Formatter } from "../../format.js";
 import { Parser, Parsable, ShortFlag, LongFlag, parseBoolean } from "../../parse/index.js";
-import { Input, Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getParameterName, VariadicParameter } from "../index.js";
-import { ArgumentsFromInput, ArgumentsPropertyFromInput } from "../arguments.js";
+import { Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getParameterName, VariadicParameter } from "../index.js";
+import { Arguments } from "../arguments.js";
 import { LongFlagToCamelCase, CamelCaseToLongFlag, longFlagToCamelCase } from "./casing.js";
 import { isShortFlag } from "../../parse/flags.js";
+import { Defined } from "../../utils/index.js";
 
 /**
  * The options portion of the input data.
  */
-export type Options = Record<string, unknown>;
+export type Options = object;
 
 export type OptionSkin<L extends LongFlag = LongFlag> = {
   shortFlag: ShortFlag;
@@ -28,25 +29,17 @@ export type Option<L extends LongFlag, V> = OptionSkin<L> & Parsable<V> & {
 };
 
 /**
- * Extracts the Options from an Input type.
+ * Return a type a Command's `properties.options` field from a given Options type.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type OptionsFromInput<I extends Input> = I extends [...infer A, infer B]
-  ? (B extends Options ? B : undefined)
-  : undefined;
+export type OptionsProperty<O extends Options> = {
+  [K in keyof O & string]: Option<CamelCaseToLongFlag<K>, O[K]>;
+};
 
 /**
- * Return a type a Command's `properties.options` field from a given Input type.
+ * Transform an Options property to an Options type.
  */
-export type OptionsPropertyFromInput<I extends Input> = I extends [...infer A, infer B]
-  ? B extends Options ? { [K in keyof B & string]: Option<CamelCaseToLongFlag<K>, B[K]>; } : undefined
-  : undefined;
-
-/**
- * Transform an Options property to an Options Input type.
- */
-export type OptionsInputFromProperty<O> = {
-  [K in keyof O]: O[K] extends Option<LongFlag, infer V> ? V : never;
+export type OptionsFromProperty<OP extends OptionsProperty<Options>> = {
+  [K in keyof OP]: OP[K] extends Option<LongFlag, infer V> ? V : never;
 };
 
 /**
@@ -61,24 +54,11 @@ type OptionWithFieldName<L extends LongFlag, V> = {
 /**
  * Merge existing Options (A) with a new required Option (B).
  */
-type MergeOptions<A extends Options | undefined, B extends Options, Q extends boolean> = {
-  [K in keyof (A extends undefined ? B : A & B)]: K extends keyof B
-    ? Q extends true ? B[K] : B[K] | undefined
-    : K extends keyof A ? A[K] : never;
+type MergeOptions<O extends Options | undefined, L extends LongFlag, V, Q extends boolean> = {
+  [K in keyof (O extends undefined ? OptionWithFieldName<L, V> : O & OptionWithFieldName<L, V>)]: K extends keyof OptionWithFieldName<L, V>
+    ? Q extends true ? OptionWithFieldName<L, V>[K] : OptionWithFieldName<L, V>[K] | undefined
+    : K extends keyof O ? O[K] : never;
 };
-
-/**
- * Merge a new required option into the Input.
- */
-type MergeOptionsToInput<I extends Input, L extends LongFlag, V, Q extends boolean> = [
-  ...ArgumentsFromInput<I>, {
-    [K in keyof MergeOptions<OptionsFromInput<I>, OptionWithFieldName<L, V>, Q>]: MergeOptions<OptionsFromInput<I>, OptionWithFieldName<L, V>, Q>[K];
-  }
-];
-
-type ReplaceOptionsInInput<I extends Input, O> = I extends [...infer A, infer B]
-  ? B extends Options ? [...A, O] : [...I, O]
-  : [...I, O];
 
 function isFunction(value: unknown): value is (...args: any[]) => any {
   return typeof value === "function";
@@ -87,33 +67,33 @@ function isFunction(value: unknown): value is (...args: any[]) => any {
 /**
  * Generates a function for creating a new option for a Command.
  */
-export function getOptionFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
+export function getOptionFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
   // Long Flag Only Signatures
   function optionFn<L extends LongFlag, V=boolean>(
     longFlag: L, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, V=boolean>(
     longFlag: L, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   // Short Flag Signatures
   function optionFn<L extends LongFlag, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, parameter: P, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
   function optionFn<L extends LongFlag, V=boolean>(
     shortFlag: ShortFlag, longFlag: L, description: string | undefined, parser?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, V, false>, R, S>;
+  ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   // Function Implementation
   function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
     a: ShortFlag | L,
@@ -121,21 +101,20 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
     c?: P | string | undefined | Parser<V>,
     d?: string | undefined | Parser<V>,
     e?: Parser<V>
-  ): Command<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S> {
+  ): Command<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S> {
     const stack = [a, b, c, d, e];
     const shortFlag = (isShortFlag(stack[0]) ? stack.shift() : undefined) as ShortFlag | undefined;
     const longFlag = stack.shift() as L;
     const parameter = (isParameter(stack[0]) ? stack.shift() : undefined) as P | undefined;
     const description = (typeof stack[0] === "string" ? stack.shift() : undefined) as string | undefined;
     const parser = (isFunction(stack[0]) ? stack.shift() : parseBoolean) as Parser<V>;
-    return getCommand<N, MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>({
+    return getCommand<N, A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R>,
+      action: properties.action as unknown as Action<A, MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R>,
       format: properties.format as unknown as Formatter<
         R,
-        OptionsPropertyFromInput<MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>>,
-      arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<
-        MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+        MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+      arguments: properties.arguments,
       options: {
         ...(properties.options ?? {}),
         [longFlagToCamelCase(longFlag)]: {
@@ -147,8 +126,7 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
           name: parameter ? getParameterName(parameter) : undefined,
           parser
         }
-      } as unknown as OptionsPropertyFromInput<
-        MergeOptionsToInput<I, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
+      } as OptionsProperty<MergeOptions<O, L, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
       help: {
         shortFlag: properties.help.shortFlag === shortFlag ? undefined : properties.help.shortFlag,
         longFlag: properties.help.longFlag === longFlag ? undefined : properties.help.longFlag,
@@ -165,20 +143,23 @@ export function getOptionFn<N extends string, I extends Input, R, S extends Comm
   return optionFn;
 }
 
-export function getOptionsFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
-  function getOptions<O extends Options | undefined = undefined>(
-    options?: O
-  ): O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I> {
+/**
+ * Get or replace the options of a command.
+ */
+export function getOptionsFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
+  function getOptions<OP extends OptionsProperty<Options> | undefined = undefined>(
+    options?: OP | undefined
+  ): OP extends OptionsProperty<infer O2> ? Command<N, A, O2, R, S> : OptionsProperty<O> {
     if(options === undefined) {
-      return properties.options as O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I>;
+      return properties.options as OP extends OptionsProperty<infer O2> ? Command<N, A, O2, R, S> : OptionsProperty<O>;
     } else {
-      return getCommand<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S>({
+      return getCommand<N, A, OptionsFromProperty<Defined<OP>>, R, S>({
         ...properties,
-        action: properties.action as unknown as Action<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R>,
-        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>>,
-        arguments: properties.arguments as unknown as ArgumentsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>,
-        options: options as unknown as OptionsPropertyFromInput<ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>>
-      }) as O extends Options ? Command<N, ReplaceOptionsInInput<I, OptionsInputFromProperty<O>>, R, S> : OptionsPropertyFromInput<I>;
+        action: properties.action as unknown as Action<A, OptionsFromProperty<Defined<OP>>, R>,
+        format: properties.format as unknown as Formatter<R, OptionsFromProperty<Defined<OP>>>,
+        arguments: properties.arguments,
+        options: options as OptionsProperty<OptionsFromProperty<Defined<OP>>>
+      }) as OP extends OptionsProperty<infer O2> ? Command<N, A, O2, R, S> : OptionsProperty<O>;
     }
   }
   return getOptions;

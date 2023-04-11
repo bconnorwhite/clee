@@ -1,9 +1,9 @@
 import { CommandProperties, getCommand, Command, Commands } from "../command.js";
 import { Action } from "../action.js";
-import { Formatter } from "../format.js";
 import { Parsable, Parser, parseString } from "../parse/index.js";
-import { Input, Parameter, isRequired, isVariadic, getParameterName, RequiredParameter, VariadicParameter } from "./index.js";
-import { Options, OptionsPropertyFromInput, OptionsFromInput } from "./options/index.js";
+import { Parameter, isRequired, isVariadic, getParameterName, RequiredParameter, VariadicParameter } from "./index.js";
+import { Options } from "./options/index.js";
+import { Defined } from "../utils/index.js";
 
 /**
  * The arguments portion of the input data.
@@ -22,31 +22,15 @@ export interface Argument<V> extends Parsable<V> {
 }
 
 /**
- * Transforms an Input to extract Arguments.
+ * Return a type a Command's `properties.arguments` field from a given Arguments type.
  */
-export type ArgumentsFromInput<I> = I extends [...infer A, infer B]
- ? B extends Options ? A : MergeArgs<A, B>
- : [];
+export type ArgumentsProperty<A> = {
+  [K in keyof A]: Argument<A[K]>;
+};
 
-type ArgumentsPropertyFromInputIfHasOptions<I> = I extends [...infer A, infer B]
-  ? B extends Options
-    ? { [K in keyof A]: Argument<A[K]>; }
-    : never
-  : { [K in keyof I]: Argument<I[K]>; };
-
-/**
- * Return a type a Command's `properties.arguments` field from a given Input type.
- */
-export type ArgumentsPropertyFromInput<I> = ArgumentsPropertyFromInputIfHasOptions<I> extends never ? {
-  [K in keyof I]: Argument<I[K]>;
-} : ArgumentsPropertyFromInputIfHasOptions<I>;
-
-/**
- * `A` is an array of Arguments.
- */
-export type ArgumentsInputFromProperty<A> = A extends Arguments ? {
-  [K in keyof A]: A[K] extends Argument<infer V> ? V : never;
-} : never;
+type ArgumentsFromProperty<AP extends ArgumentsProperty<Arguments>> = [
+  ...{ [K in keyof AP]: AP[K] extends Argument<infer V> ? V : never; }
+];
 
 /**
  * Returns true if the last argument in a set of Arguments is variadic.
@@ -57,38 +41,27 @@ export type HasVariadicArgument<A extends Arguments> = A extends [...infer B, in
 
 /**
  * Merge existing Arguments (A) with a new Argument (B).
+ * A - The existing Arguments.
+ * B - The new Argument.
+ * Q - Whether the new Argument is required.
  */
-type MergeArgs<A extends Arguments, B> = [...A, B];
+type MergeArgs<A extends Arguments, B, Q extends boolean> = [...A, Q extends true ? Defined<B> : B | undefined];
 
-/**
- * Merge a new argument into the Input.
- */
-type MergeArgsToInput<I extends Input, V, Q extends boolean> = OptionsFromInput<I> extends undefined
-  ? [...MergeArgs<ArgumentsFromInput<I>, Q extends true ? V : V | undefined>]
-  : [...MergeArgs<ArgumentsFromInput<I>, Q extends true ? V : V | undefined>, OptionsFromInput<I>];
-
-/**
- * Replace the arguments portion of an Input with a new set of Arguments.
- */
-type ReplaceArgsInInput<I extends Input, A extends Arguments> = OptionsFromInput<I> extends undefined
-  ? A
-  : [...A, OptionsFromInput<I>];
-
-export function getArgumentFn<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
+export function getArgumentFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
   function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     parser?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>, O, R, S>;
   function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     description: string | undefined,
     parser?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>;
+  ): Command<N, MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>, O, R, S>;
   function argumentFn<P extends Parameter, V=string>(
     parameter: P,
     b: string | undefined | Parser<V>,
     c?: Parser<V>
-  ): Command<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S> {
+  ): Command<N, MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>, O, R, S> {
     const variadic = isVariadic(parameter);
     const argument: Argument<V> = {
       name: getParameterName(parameter),
@@ -97,39 +70,36 @@ export function getArgumentFn<N extends string, I extends Input, R, S extends Co
       description: typeof b === "string" ? b : undefined,
       parser: (typeof b === "function" ? b : c) ?? parseString as Parser<V>
     };
-    return getCommand<N, MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>, R, S>({
+    return getCommand<N, MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>, O, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<
-        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>,
-        R>,
-      format: properties.format as unknown as Formatter<
-        R,
-        OptionsPropertyFromInput<MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>>,
-      arguments: [...properties.arguments, argument] as unknown as ArgumentsPropertyFromInput<
-        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>,
-      options: properties.options as unknown as OptionsPropertyFromInput<
-        MergeArgsToInput<I, P extends VariadicParameter ? V[] : V, P extends RequiredParameter ? true : false>>
+      action: properties.action as unknown as Action<MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>, O, R>,
+      format: properties.format,
+      arguments: [...properties.arguments, argument] as ArgumentsProperty<MergeArgs<A, P extends VariadicParameter ? Defined<V>[] : V, P extends RequiredParameter ? true : false>>,
+      options: properties.options
     });
   }
   return argumentFn;
 }
 
-export function getArgumentsFn<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>
+/**
+ * Get or replace the arguments of a command.
+ */
+export function getArgumentsFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>
 ) {
-  function argumentsFn<A extends Argument<unknown>[] | undefined = undefined>(
-    args?: A
-  ): A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>, R, S> {
+  function argumentsFn<AP extends ArgumentsProperty<Arguments> | undefined = undefined>(
+    args?: AP | undefined
+  ): AP extends ArgumentsProperty<infer A2 extends Arguments> ? Command<N, A2, O, R, S> : ArgumentsProperty<A> {
     if(args === undefined) {
-      return properties.arguments as A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>, R, S>;
+      return properties.arguments as AP extends ArgumentsProperty<infer A2 extends Arguments> ? Command<N, A2, O, R, S> : ArgumentsProperty<A>;
     } else {
-      return getCommand<N, ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>, R, S>({
+      return getCommand<N, ArgumentsFromProperty<Defined<AP>>, O, R, S>({
         ...properties,
-        action: properties.action as unknown as Action<ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>, R>,
-        format: properties.format as unknown as Formatter<R, OptionsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>>>,
-        arguments: args as unknown as ArgumentsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>>,
-        options: properties.options as unknown as OptionsPropertyFromInput<ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>>
-      }) as A extends undefined ? ArgumentsPropertyFromInput<I> : Command<N, ReplaceArgsInInput<I, ArgumentsInputFromProperty<A>>, R, S>;
+        action: properties.action as unknown as Action<ArgumentsFromProperty<Defined<AP>>, O, R>,
+        format: properties.format,
+        arguments: args as unknown as ArgumentsProperty<ArgumentsFromProperty<Defined<AP>>>,
+        options: properties.options
+      }) as AP extends ArgumentsProperty<infer A2 extends Arguments> ? Command<N, A2, O, R, S> : ArgumentsProperty<A>;
     }
   }
   return argumentsFn;

@@ -1,6 +1,6 @@
 import { Command, CommandProperties, getCommand, Commands } from "./command.js";
-import { Input, wrapParameter } from "./input/index.js";
-import { Option } from "./input/options/index.js";
+import { Arguments, wrapParameter } from "./input/index.js";
+import { Option, Options } from "./input/options/index.js";
 import { ShortFlag, LongFlag } from "./parse/index.js";
 import { isActiveVersionOption } from "./version.js";
 
@@ -23,21 +23,21 @@ function leftPad(string = "", length: number) {
 /**
  * Return the title portion of the help screen.
  */
-function getTitle<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
+function getTitle<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): string {
   return properties.title !== undefined ? `${properties.title}` : "";
 }
 
 /**
  * Return the description portion of the help screen.
  */
-function getDescription<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
+function getDescription<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): string {
   return properties.description !== undefined ? `${properties.description}` : "";
 }
 
 /**
  * Return the usage portion of the help screen.
  */
-function getUsage<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
+function getUsage<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): string {
   const optionParameter = properties.options ? ` ${wrapParameter("options", false, false)}` : "";
   const commandParameter = Object.keys(properties.commands ?? {}).length > 0 ? ` ${wrapParameter("command")}` : "";
   return properties.arguments.reduce((retval, { name, required, variadic }) => {
@@ -48,7 +48,7 @@ function getUsage<N extends string, I extends Input, R, S extends Commands>(prop
 /**
  * Group arguments into an array of [prefix, description] pairs.
  */
-function getArgumentParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): [string, string][] {
+function getArgumentParameters<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): [string, string][] {
   const shouldDisplayArgs = properties.arguments.some(({ description }) => description !== undefined);
   return shouldDisplayArgs ? properties.arguments.map(({ name, required, variadic, description }) => {
     return [`  ${wrapParameter(name, required, variadic)}`, description ?? ""];
@@ -58,7 +58,7 @@ function getArgumentParameters<N extends string, I extends Input, R, S extends C
 /**
  * Group options into an array of [prefix, description] pairs.
  */
-function getOptionParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): [string, string][] {
+function getOptionParameters<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): [string, string][] {
   const options = Object.values<Partial<Option<LongFlag, unknown>>>(properties.options ?? {});
   if(isActiveVersionOption(properties.version)) {
     options.push(properties.version);
@@ -78,7 +78,7 @@ function getOptionParameters<N extends string, I extends Input, R, S extends Com
 /**
  * Group commands into an array of [prefix, description] pairs.
  */
-function getCommandParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): [string, string][] {
+function getCommandParameters<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): [string, string][] {
   return (Object.values(properties.commands ?? {}) as Command[]).map((command) => {
     const subOptionParameter = command.options() ? ` ${wrapParameter("options")}` : "";
     const subArgumentParameters = command.arguments().reduce((argRetval, { name, required, variadic }) => {
@@ -100,7 +100,7 @@ function joinSections(sections: string[][]) {
  * This function combines the arguments, options, and commands portion of the help screen.
  * All three are related since they are aligned based on the longest prefix.
  */
-function getParameters<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>): string {
+function getParameters<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): string {
   const argumentParameters = getArgumentParameters(properties);
   const optionParameters = getOptionParameters(properties);
   const commandParameters = getCommandParameters(properties);
@@ -125,8 +125,8 @@ function getParameters<N extends string, I extends Input, R, S extends Commands>
 /**
  * Return the help screen as a string.
  */
-export function getHelp<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>
+export function getHelp<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>
 ): string {
   return [
     getTitle(properties),
@@ -139,18 +139,18 @@ export function getHelp<N extends string, I extends Input, R, S extends Commands
 /**
  * Returns true if a help flag is present in the arguments.
  */
-export function hasHelpFlag<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>,
+export function hasHelpFlag<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>,
   args: readonly string[]
 ): boolean {
   const helpFlags = [properties.help.shortFlag, properties.help.longFlag].filter((flag) => flag !== undefined);
   return helpFlags.some((flag) => flag !== undefined && args.includes(flag));
 }
 
-export function getHelpFn<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>
+export function getHelpFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>
 ) {
-  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, I, R, S> {
+  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, A, O, R, S> {
     return getCommand({
       ...properties,
       help: {

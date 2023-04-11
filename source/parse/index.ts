@@ -1,12 +1,12 @@
 /* eslint-disable max-depth */
 import { toCamelCase } from "typed-case";
-import { Input, wrapParameter } from "../input/index.js";
+import { Arguments, Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
-import { Option, OptionsPropertyFromInput } from "../input/options/index.js";
+import { Option, Options } from "../input/options/index.js";
 import { Flag, isFlag, LongFlag, parseFlag, isCompoundFlag, getShortFlag, isLetter } from "./flags.js";
 import { hasHelpFlag, getHelp } from "../help.js";
 import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
-import { mapAllSeries, reduceAllSeries } from "../utils/index.js";
+import { isDefined, mapAllSeries, reduceAllSeries } from "../utils/index.js";
 
 /**
  * Program output in the case that the help or version flags are used.
@@ -31,19 +31,19 @@ export type ParseOptions = {
   silent?: boolean;
 };
 
-export function getOptionEntries<N extends string, I extends Input, R, S extends Commands>(properties: CommandProperties<N, I, R, S>) {
+export function getOptionEntries<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>) {
   return Object.entries<Option<LongFlag, unknown>>(properties.options ?? {});
 }
 
-function getOptionEntry<N extends string, I extends Input, R, S extends Commands>(flag: Flag, properties: CommandProperties<N, I, R, S>) {
+function getOptionEntry<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(flag: Flag, properties: CommandProperties<N, A, O, R, S>) {
   return getOptionEntries(properties).find(([_, { shortFlag, longFlag }]) => {
     return longFlag === flag || shortFlag === flag;
   });
 }
 
-function collectArgs<N extends string, I extends Input, R, S extends Commands>(
+function collectArgs<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
   input: readonly string[],
-  properties: CommandProperties<N, I, R, S>
+  properties: CommandProperties<N, A, O, R, S>
 ) {
   const args: string[] = [];
   const options: Record<string, string | string[]> = {};
@@ -100,10 +100,10 @@ function collectArgs<N extends string, I extends Input, R, S extends Commands>(
   };
 }
 
-async function parseArgs<N extends string, I extends Input, R, S extends Commands>(
+async function parseArgs<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
   input: readonly string[],
-  properties: CommandProperties<N, I, R, S>
-): Promise<I> {
+  properties: CommandProperties<N, A, O, R, S>
+): Promise<Input<A, O>> {
   const { args, options } = collectArgs(input, properties);
   const parsedArgs = await mapAllSeries(properties.arguments, async (argument, index) => {
     const isLast: boolean = (index === properties.arguments.length-1);
@@ -115,7 +115,7 @@ async function parseArgs<N extends string, I extends Input, R, S extends Command
       variadic: argument.variadic,
       required: argument.required
     };
-    const parsedValue = isVariadic ? await mapAllSeries(rawValue, (item) => argument.parser(item, parserOptions)) : await argument.parser(rawValue[0], parserOptions);
+    const parsedValue = isVariadic ? (await mapAllSeries(rawValue, (item) => argument.parser(item, parserOptions))).filter(isDefined) : argument.parser(rawValue[0], parserOptions);
     if(parsedValue === undefined && argument.required) {
       throw new Error(`Argument "${wrapParameter(argument.name, true, argument.variadic)}" is required.`);
     } else {
@@ -140,16 +140,16 @@ async function parseArgs<N extends string, I extends Input, R, S extends Command
     }
     return retval;
   }, {} as Record<string, unknown>);
-  return [...parsedArgs, parsedOptions] as I;
+  return [...parsedArgs, parsedOptions] as Input<A, O>;
 }
 
 /**
  * Generates the `.parse` function for a given Command.
  */
-export function getParseFn<N extends string, I extends Input, R, S extends Commands>(
-  properties: CommandProperties<N, I, R, S>
+export function getParseFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
+  properties: CommandProperties<N, A, O, R, S>
 ) {
-  async function parseFn<A extends readonly string[] | undefined>(input?: A, parseOptions?: ParseOptions): Promise<ParseResult> {
+  async function parseFn<I extends readonly string[] | undefined>(input?: I, parseOptions?: ParseOptions): Promise<ParseResult> {
     const array = (input ?? process.argv.slice(2));
     const subcommand = array[0];
     if(subcommand && properties.commands?.[subcommand]) {
@@ -181,12 +181,12 @@ export function getParseFn<N extends string, I extends Input, R, S extends Comma
         // Parse
         const args = await parseArgs(array, properties);
         // Run the action
-        const result = await Promise.resolve(properties.action(...args as I));
+        const result = await Promise.resolve(properties.action(...args));
         if(result instanceof Error) {
           process.exitCode = 1;
         }
         // Format the result
-        const string = properties.format(result, args[args.length-1] as OptionsPropertyFromInput<I>);
+        const string = properties.format(result, args[args.length-1] as O);
         if(string !== undefined) {
           console.info(string);
         }
