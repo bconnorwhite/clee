@@ -52,41 +52,56 @@ function collectArgs<N extends string, A extends Arguments, O extends Options, R
     if(isFlag(arg)) {
       const flag = parseFlag(arg);
       if(isCompoundFlag(arg)) {
+        let hasMatch = false;
         flag.name.split("").forEach((char) => {
           if(isLetter(char)) {
-            const [fieldName, option] = getOptionEntry(getShortFlag(char), properties) ?? [toCamelCase(char), {}];
-            if(option.variadic) {
-              if(options[fieldName] === undefined) {
-                options[fieldName] = [];
+            const optionEntry = getOptionEntry(getShortFlag(char), properties);
+            if(optionEntry !== undefined) {
+              hasMatch = true;
+              const [fieldName, option] = optionEntry;
+              if(option.variadic) {
+                if(options[fieldName] === undefined) {
+                  options[fieldName] = [];
+                }
+                const array = options[fieldName] as string[];
+                array.push(flag.body ?? "true");
+              } else {
+                options[fieldName] = "true";
               }
-              const array = options[fieldName] as string[];
-              array.push(flag.body ?? "true");
-            } else {
-              options[fieldName] = "true";
             }
           }
         });
-      } else {
-        const [fieldName, option] = getOptionEntry(flag.staff, properties) ?? [toCamelCase(flag.name), {}];
-        const array: string[] = [];
-        if(flag.body !== undefined) {
-          array.push(flag.body);
-        } else {
-          while(index < input.length-1 && input[index+1] !== undefined && !isFlag(input[index+1] as string) && (option.variadic || array.length === 0)) {
-            array.push(input[index+1] as string);
-            index+=1;
-          }
-          if(array.length === 0) {
-            array.push("true");
-          }
+        if(!hasMatch) {
+          // Did not match any options, push as an argument instead.
+          args.push(arg);
         }
-        if(option.variadic) {
-          if(options[fieldName] === undefined) {
-            options[fieldName] = [];
-          }
-          options[fieldName] = (options[fieldName] as string[]).concat(array);
+      } else {
+        const optionEntry = getOptionEntry(flag.staff, properties);
+        if(optionEntry === undefined) {
+          // Option does not exist, push as an argument instead.
+          args.push(arg);
         } else {
-          options[fieldName] = array[0] as string;
+          const [fieldName, option] = optionEntry;
+          const array: string[] = [];
+          if(flag.body !== undefined) {
+            array.push(flag.body);
+          } else {
+            while(index < input.length-1 && input[index+1] !== undefined && !isFlag(input[index+1] as string) && (option.variadic || array.length === 0)) {
+              array.push(input[index+1] as string);
+              index+=1;
+            }
+            if(array.length === 0) {
+              array.push("true");
+            }
+          }
+          if(option.variadic) {
+            if(options[fieldName] === undefined) {
+              options[fieldName] = [];
+            }
+            options[fieldName] = (options[fieldName] as string[]).concat(array);
+          } else {
+            options[fieldName] = array[0] as string;
+          }
         }
       }
     } else {
