@@ -92,3 +92,23 @@ export async function promptFloat(string: string | undefined, options: ParserOpt
     return validateFloat(input);
   }
 }
+
+function validateDollars(number: number): number {
+  if(Number.isNaN(number)) {
+    throw new Error("Unable to parse dollar amount.");
+  } else {
+    return number;
+  }
+}
+
+/**
+ * Parse a dollar amount from a string.
+ */
+export function parseDollars(string: string | undefined): number | undefined {
+  if(string === undefined) {
+    return undefined;
+  } else {
+    const dollars = Number.parseFloat(string.replace(/[$,]/g, ""));
+    return validateDollars(dollars);
+  }
+}
