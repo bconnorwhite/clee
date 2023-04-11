@@ -53,7 +53,7 @@
   "devDependencies": {
     "@types/figlet": "^1.5.5",
     "@types/node": "^18.11.9",
-    "autorepo": "^0.1.9",
+    "autorepo": "^0.1.10",
     "chalk": "^5.2.0"
   },
   "eslintConfig": {
