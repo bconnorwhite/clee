@@ -73,7 +73,7 @@ export type CommandProperties<N extends string, A extends Arguments, O extends O
   arguments: ArgumentsProperty<A>;
   options: OptionsProperty<O> | undefined;
   // Additional options
-  help: Partial<OptionSkin>;
+  help: Partial<OptionSkin> | undefined;
   version: VersionOption;
   // The action and formatter
   action: Action<A, O, R> | undefined;

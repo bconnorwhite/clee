@@ -63,7 +63,7 @@ function getOptionParameters<N extends string, A extends Arguments, O extends Op
   if(isActiveVersionOption(properties.version)) {
     options.push(properties.version);
   }
-  if(properties.help.shortFlag || properties.help.longFlag) {
+  if(properties.help?.shortFlag || properties.help?.longFlag) {
     options.push(properties.help as Option<LongFlag, unknown>);
   }
   return options.map((option) => {
@@ -143,22 +143,31 @@ export function hasHelpFlag<N extends string, A extends Arguments, O extends Opt
   properties: CommandProperties<N, A, O, R, S>,
   args: readonly string[]
 ): boolean {
-  const helpFlags = [properties.help.shortFlag, properties.help.longFlag].filter((flag) => flag !== undefined);
+  const helpFlags = [properties.help?.shortFlag, properties.help?.longFlag].filter((flag) => flag !== undefined);
   return helpFlags.some((flag) => flag !== undefined && args.includes(flag));
 }
 
 export function getHelpFn<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
   properties: CommandProperties<N, A, O, R, S>
 ) {
-  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, A, O, R, S> {
-    return getCommand({
-      ...properties,
-      help: {
-        shortFlag,
-        longFlag,
-        description
-      }
-    });
+  function helpFn(): Command<N, A, O, R, S>;
+  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, A, O, R, S>;
+  function helpFn(shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S> {
+    if(shortFlag !== undefined) {
+      return getCommand({
+        ...properties,
+        help: {
+          shortFlag,
+          longFlag,
+          description
+        }
+      });
+    } else {
+      return getCommand({
+        ...properties,
+        help: undefined
+      });
+    }
   }
   return helpFn;
 }

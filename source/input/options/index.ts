@@ -108,7 +108,10 @@ export function getOptionFn<N extends string, A extends Arguments, O extends Opt
     const parser = (isFunction(stack[0]) ? stack.shift() : parseBoolean) as Parser<V>;
     return getCommand<N, A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R, S>({
       ...properties,
-      action: properties.action as unknown as Action<A, MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>, R>,
+      action: properties.action as unknown as Action<
+        A,
+        MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>,
+        R>,
       format: properties.format as unknown as Formatter<
         R,
         MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>>,
@@ -126,9 +129,9 @@ export function getOptionFn<N extends string, A extends Arguments, O extends Opt
         }
       } as OptionsProperty<MergeOptions<O, L, P extends VariadicParameter ? Defined<V>[] | undefined : V, P extends RequiredParameter ? true : false>>,
       help: {
-        shortFlag: properties.help.shortFlag === shortFlag ? undefined : properties.help.shortFlag,
-        longFlag: properties.help.longFlag === longFlag ? undefined : properties.help.longFlag,
-        description: properties.help.description
+        shortFlag: properties.help?.shortFlag === shortFlag ? undefined : properties.help?.shortFlag,
+        longFlag: properties.help?.longFlag === longFlag ? undefined : properties.help?.longFlag,
+        description: properties.help?.description
       },
       version: {
         ...properties.version,

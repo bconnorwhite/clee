@@ -2,6 +2,13 @@ import { describe, test, expect } from "@jest/globals";
 import clee from "../source/index.js";
 
 describe("help", () => {
+  test("clear", async () => {
+    const cmd = clee("clee").help();
+    const result = await cmd.parse(["-h"]);
+    expect(result).toStrictEqual({
+      message: "Usage: clee"
+    });
+  });
   test("usage", async () => {
     const cmd = clee("clee").help("-e", "--example", "Example Description");
     const result = await cmd.parse(["-e"]);
