@@ -1,3 +1,12 @@
+## [0.2.7](https://github.com/bconnorwhite/clee/compare/v0.2.6...v0.2.7) (2023-04-11)
+
+
+### Bug Fixes
+
+* ensure options always has at least empty object ([94495b3](https://github.com/bconnorwhite/clee/commit/94495b3b97c8416019cc007685292e93a17bc3e7))
+
+
+
 ## [0.2.6](https://github.com/bconnorwhite/clee/compare/v0.2.5...v0.2.6) (2023-04-11)
 
 
