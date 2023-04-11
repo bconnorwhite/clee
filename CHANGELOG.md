@@ -1,3 +1,17 @@
+## [0.2.9](https://github.com/bconnorwhite/clee/compare/v0.2.8...v0.2.9) (2023-04-11)
+
+
+### Bug Fixes
+
+* remove autorepo from dependencies ([48030b6](https://github.com/bconnorwhite/clee/commit/48030b63c7fd3d03d8c77669602ab4d2cc0a8727))
+
+
+### Features
+
+* move parseCWD to built-in cwd option ([4ee0371](https://github.com/bconnorwhite/clee/commit/4ee0371ead84fb6b31a285ad6f4ba26b847a5de3))
+
+
+
 ## [0.2.8](https://github.com/bconnorwhite/clee/compare/v0.2.7...v0.2.8) (2023-04-11)
 
 
