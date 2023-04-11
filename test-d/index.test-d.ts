@@ -64,37 +64,37 @@ const callResultWithOption = clee("test")
   .option("-f", "--flag")
   .action((options) => options)();
 
-expectType<{ flag?: boolean | undefined; } | undefined>(callResultWithOption);
+expectType<{ flag?: boolean | undefined; }>(callResultWithOption);
 
 const callResultWithOptionCustomParser = clee("test")
   .option("-f", "--flag", parseString)
   .action((options) => options)({ flag: "string" });
 
-expectType<{ flag?: string | undefined; } | undefined>(callResultWithOptionCustomParser);
+expectType<{ flag?: string | undefined; }>(callResultWithOptionCustomParser);
 
 const callResultWithOptionalOption = clee("test")
   .option("-f", "--flag", "[flag]")
   .action((options) => options)({});
 
-expectType<{ flag?: boolean | undefined; } | undefined>(callResultWithOptionalOption);
+expectType<{ flag?: boolean | undefined; }>(callResultWithOptionalOption);
 
 const callResultWithOptionalOptionCustomParser = clee("test")
   .option("-f", "--flag", "[flag]", parseString)
   .action((options) => options)({ flag: "test" });
 
-expectType<{ flag?: string | undefined; } | undefined>(callResultWithOptionalOptionCustomParser);
+expectType<{ flag?: string | undefined; }>(callResultWithOptionalOptionCustomParser);
 
 const callResultWithOptionalVariadicOption = clee("test")
   .option("-f", "--flag", "[flag...]")
   .action((options) => options)({ flag: undefined });
 
-expectType<{ flag?: boolean[] | undefined; } | undefined>(callResultWithOptionalVariadicOption);
+expectType<{ flag?: boolean[] | undefined; }>(callResultWithOptionalVariadicOption);
 
 const callResultWithOptionalVariadicOptionCustomParser = clee("test")
   .option("-f", "--flag", "[flag...]", parseString)
   .action((options) => options)({ flag: ["test"] });
 
-expectType<{ flag?: string[] | undefined; } | undefined>(callResultWithOptionalVariadicOptionCustomParser);
+expectType<{ flag?: string[] | undefined; }>(callResultWithOptionalVariadicOptionCustomParser);
 
 const callResultWithRequiredOption = clee("test")
   .option("-f", "--flag", "<flag>")

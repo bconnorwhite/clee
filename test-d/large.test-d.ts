@@ -181,5 +181,5 @@ expectType<{
   flag1?: string | undefined;
   flag2?: boolean | undefined;
   boolean?: boolean | undefined;
-} | undefined>(summaryResult);
+}>(summaryResult);
 

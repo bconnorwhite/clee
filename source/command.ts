@@ -24,13 +24,17 @@ export type CommandOptions<C> = C extends Command<infer N, infer A, infer O, inf
 export type CommandResult<C> = C extends Command<infer N, infer A, infer O, infer R, infer S> ? R : never;
 export type CommandSubCommands<C> = C extends Command<infer N, infer A, infer O, infer R, infer S> ? S : never;
 
+/**
+ * Signature of a command function.
+ */
+export type Call<A extends Arguments=[], O extends Options=Options, R=void> = (...input: Input<A, O, false>) => R;
 
 /**
  * The base command object.
  * Each function returns `Command`, except for `parse` which returns `ParseResult`.
  * Calling the command itself returns `R | Error`.
  */
-export interface Command<N extends string=string, A extends Arguments=[], O extends Options=Options, R=void, S extends Commands=undefined> extends Action<A, O, R> {
+export interface Command<N extends string=string, A extends Arguments=[], O extends Options=Options, R=void, S extends Commands=undefined> extends Call<A, O, R> {
   // Base Settings
   name: ReturnType<typeof getNameFn<N, A, O, R, S>>;
   title: ReturnType<typeof getTitleFn<N, A, O, R, S>>;
@@ -103,7 +107,12 @@ export function getCommandFn<N extends string, A extends Arguments, O extends Op
 export function getCommand<N extends string, A extends Arguments=[], O extends Options=Options, R=void, S extends Commands=Record<string, never>>(
   properties: CommandProperties<N, A, O, R, S>
 ): Command<N, A, O, R, S> {
-  const command = (properties.action ?? (() => {})) as Command<N, A, O, R, S>;
+  const command = ((...args: Input<A, O>) => {
+    if(args[properties.arguments.length] === undefined) {
+      args[properties.arguments.length] = {};
+    }
+    return (properties.action ?? (() => {}))(...(args as Input<A, O, true>));
+  }) as unknown as Command<N, A, O, R, S>;
   // Base Settings
   Object.defineProperty(command, "name", { value: getNameFn(properties) }); // This is super hacky but I'm gonna leave it until something breaks
   command.title = getTitleFn(properties);
@@ -126,5 +135,3 @@ export function getCommand<N extends string, A extends Arguments=[], O extends O
   command.run = getRunFn(properties);
   return command;
 }
-
-

@@ -118,7 +118,7 @@ function collectArgs<N extends string, A extends Arguments, O extends Options, R
 async function parseArgs<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(
   input: readonly string[],
   properties: CommandProperties<N, A, O, R, S>
-): Promise<Input<A, O>> {
+): Promise<Input<A, O, true>> {
   const { args, options } = collectArgs(input, properties);
   const parsedArgs = await mapAllSeries(properties.arguments, async (argument, index) => {
     const isLast: boolean = (index === properties.arguments.length-1);
@@ -155,7 +155,7 @@ async function parseArgs<N extends string, A extends Arguments, O extends Option
     }
     return retval;
   }, {} as Record<string, unknown>);
-  return [...parsedArgs, parsedOptions] as Input<A, O>;
+  return [...parsedArgs, parsedOptions] as Input<A, O, true>;
 }
 
 /**

@@ -7,7 +7,7 @@ import { Options } from "./input/options/index.js";
 /**
  * A function that is called when a command is executed.
  */
-export type Action<A extends Arguments=[], O extends Options=Options, R=void> = (...input: Input<A, O>) => R;
+export type Action<A extends Arguments=[], O extends Options=Options, R=void> = (...input: Input<A, O, true>) => R;
 
 /**
  * Generates a function for getting and setting a Command's action.

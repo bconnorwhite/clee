@@ -3,11 +3,11 @@ import { Options } from "./options/index.js";
 
 type HasRequiredFields<T> = undefined extends T[keyof T] ? false : true;
 
-export type Input<A extends Arguments=[], O extends Options=Options> = keyof O extends never
+export type Input<A extends Arguments=[], O extends Options=Options, RequireOptions=false> = keyof O extends never
   ? [...A]
   : HasRequiredFields<O> extends true
     ? [...A, O]
-    : [...A, O?];
+    : RequireOptions extends true ? [...A, O] : [...A, O?];
 
 export { getArgumentFn, getArgumentsFn } from "./arguments.js";
 export { getOptionFn, getOptionsFn } from "./options/index.js";
