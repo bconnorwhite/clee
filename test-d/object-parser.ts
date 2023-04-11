@@ -15,7 +15,7 @@ const cmd1 = clee("test")
     };
   })(parsePath("."), { flag1: true });
 
-expectType<{ test: Path | undefined, options: { flag1: boolean | undefined; } }>(cmd1);
+expectType<{ test: Path | undefined, options: { flag1?: boolean | undefined; } | undefined }>(cmd1);
 
 const cmd2 = clee("test")
   .option("--flag1")
@@ -27,7 +27,7 @@ const cmd2 = clee("test")
     };
   })(parsePath(".") as Path, { flag1: true });
 
-expectType<{ test: Path, options: { flag1: boolean | undefined; } }>(cmd2);
+expectType<{ test: Path, options: { flag1?: boolean | undefined; } | undefined }>(cmd2);
 
 // Arguments, then Options
 
@@ -41,7 +41,7 @@ const cmd3 = clee("test")
     };
   })(parsePath(".") as Path, { flag1: true });
 
-expectType<{ test: Path, options: { flag1: boolean | undefined; } }>(cmd3);
+expectType<{ test: Path, options: { flag1?: boolean | undefined; } | undefined }>(cmd3);
 
 const cmd4 = clee("test")
   .argument("[test]", "Description.", parsePath)
@@ -53,4 +53,4 @@ const cmd4 = clee("test")
     };
   })(parsePath("."), { flag1: true });
 
-expectType<{ test: Path | undefined, options: { flag1: boolean | undefined; } }>(cmd4);
+expectType<{ test: Path | undefined, options: { flag1?: boolean | undefined; } | undefined }>(cmd4);

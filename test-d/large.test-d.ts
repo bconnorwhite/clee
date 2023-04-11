@@ -177,5 +177,9 @@ const summary = clee("summary")
 
 const summaryResult = summary({ flag1: undefined, flag2: undefined, boolean: undefined });
 
-expectType<{ flag1: string | undefined; flag2: boolean | undefined; boolean: boolean | undefined; }>(summaryResult);
+expectType<{
+  flag1?: string | undefined;
+  flag2?: boolean | undefined;
+  boolean?: boolean | undefined;
+} | undefined>(summaryResult);
 

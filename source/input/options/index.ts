@@ -6,7 +6,7 @@ import { Parameter, RequiredParameter, isParameter, isVariadic, isRequired, getP
 import { Arguments } from "../arguments.js";
 import { LongFlagToCamelCase, CamelCaseToLongFlag, longFlagToCamelCase } from "./casing.js";
 import { isShortFlag } from "../../parse/flags.js";
-import { Defined } from "../../utils/index.js";
+import { Defined, UndefinedToOptional, isFunction } from "../../utils/index.js";
 
 /**
  * The options portion of the input data.
@@ -54,17 +54,13 @@ type OptionWithFieldName<L extends LongFlag, V> = {
 /**
  * Merge existing Options (A) with a new required Option (B).
  */
-type MergeOptions<O extends Options | undefined, L extends LongFlag, V, Q extends boolean> = {
+type MergeOptions<O extends Options | undefined, L extends LongFlag, V, Q extends boolean> = UndefinedToOptional<{
   [K in keyof (O extends undefined ? OptionWithFieldName<L, V> : O & OptionWithFieldName<L, V>)]: K extends keyof OptionWithFieldName<L, V>
     ? Q extends true
       ? Defined<OptionWithFieldName<L, V>[K]>
       : OptionWithFieldName<L, V>[K]
     : K extends keyof O ? O[K] : never;
-};
-
-function isFunction(value: unknown): value is (...args: any[]) => any {
-  return typeof value === "function";
-}
+}>;
 
 /**
  * Generates a function for creating a new option for a Command.
@@ -97,7 +93,7 @@ export function getOptionFn<N extends string, A extends Arguments, O extends Opt
     shortFlag: ShortFlag, longFlag: L, description: string | undefined, parser?: Parser<V>
   ): Command<N, A, MergeOptions<O, L, V, false>, R, S>;
   // Function Implementation
-  function optionFn<L extends LongFlag, P extends Parameter, V=boolean>(
+  function optionFn<L extends LongFlag, P extends Parameter, V=boolean | undefined>(
     a: ShortFlag | L,
     b: L | P | string | undefined | Parser<V>,
     c?: P | string | undefined | Parser<V>,

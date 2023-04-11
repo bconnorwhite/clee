@@ -9,16 +9,16 @@ expectType<{ flag: Option<"--flag", boolean | undefined>; }>(cmd.options());
 
 const cmd2 = clee("test")
   .options(cmd.options())
-  .action((options) => options)({ flag: undefined });
+  .action((options) => options)();
 
-expectType<{ flag: boolean | undefined; }>(cmd2);
+expectType<{ flag?: boolean | undefined; } | undefined>(cmd2);
 
 const cmd3 = clee("test")
   .option("-o", "--other")
   .options(cmd.options())
-  .action((options) => options)({ flag: undefined });
+  .action((options) => options)();
 
-expectType<{ flag: boolean | undefined; }>(cmd3);
+expectType<{ flag?: boolean | undefined; } | undefined>(cmd3);
 
 const cmd4 = clee("test")
   .description("Test")
