@@ -5,7 +5,7 @@ import { parseCSV, parseInt } from "../source/parse/parser/index.js";
 
 describe("option", () => {
   describe("boolean", () => {
-    const cmd = clee("clee").option("-f", "--flag", "Description");
+    const cmd = clee("clee").option("-f", "--flag", "Description").cwd();
     test("usage", async () => {
       expect(await cmd.parse(["-h"])).toStrictEqual({
         message: "Usage: clee [options]\n\nOptions:\n  -f, --flag  Description\n  -h, --help  Display help for command"
@@ -13,7 +13,7 @@ describe("option", () => {
     });
   });
   describe("no short flag", () => {
-    const cmd = clee("clee").option("--flag", "Description");
+    const cmd = clee("clee").option("--flag", "Description").cwd();
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -24,6 +24,7 @@ describe("option", () => {
   describe("variadic", () => {
     const cmd = clee("clee")
       .option("-f", "--flag", "Description", parseInt)
+      .cwd()
       .action((options) => {
         return options.flag;
       });
@@ -48,7 +49,7 @@ describe("option", () => {
     });
   });
   describe("no description", () => {
-    const cmd = clee("clee").option("-f", "--flag");
+    const cmd = clee("clee").option("-f", "--flag").cwd();
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -107,6 +108,7 @@ describe("requiredOption", () => {
   describe("boolean", () => {
     const cmd = clee("clee")
       .option("-f", "--flag", "<value>", "Description")
+      .cwd()
       .action((options) => options.flag);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);

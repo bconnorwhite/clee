@@ -7,6 +7,7 @@ import { Flag, isFlag, LongFlag, parseFlag, isCompoundFlag, getShortFlag, isLett
 import { hasHelpFlag, getHelp } from "../help.js";
 import { hasVersionFlag, getVersion, isActiveVersionOption } from "../version.js";
 import { isDefined, mapAllSeries, reduceAllSeries } from "../utils/index.js";
+import { getCWD } from "../cwd.js";
 
 /**
  * Program output in the case that the help or version flags are used.
@@ -191,6 +192,12 @@ export function getParseFn<N extends string, A extends Arguments, O extends Opti
       }
       return { message: help };
     } else {
+      const cwd = getCWD(properties, array);
+      if(cwd !== undefined) {
+        try {
+          process.chdir(cwd);
+        } catch(e) {}
+      }
       // Run the command
       try {
         // Parse

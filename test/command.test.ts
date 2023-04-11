@@ -13,6 +13,7 @@ describe("subcommand", () => {
   const cmd = clee("clee")
     .argument("[arg1]", parseString)
     .command(sub)
+    .cwd()
     .action((arg1) => {
       return arg1;
     })
@@ -45,6 +46,7 @@ describe("no action", () => {
       return result ? "SubTrue" : "SubFalse";
     });
   const cmd = clee("clee")
+    .cwd()
     .command(sub);
   test("usage", async () => {
     const result = await cmd.parse();

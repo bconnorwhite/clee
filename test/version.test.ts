@@ -4,7 +4,9 @@ import clee from "../source/index.js";
 
 describe("version", () => {
   describe("hardcoded", () => {
-    const cmd = clee("clee").version("1.0.0");
+    const cmd = clee("clee")
+      .cwd()
+      .version("1.0.0");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -20,7 +22,9 @@ describe("version", () => {
   });
   describe("load from pkg", () => {
     const version = getVersionSync(import.meta.url);
-    const cmd = clee("clee").version(import.meta.url);
+    const cmd = clee("clee")
+      .cwd()
+      .version(import.meta.url);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -44,6 +48,7 @@ describe("version", () => {
   describe("flag override", () => {
     const cmd = clee("clee")
       .version("1.0.0")
+      .cwd()
       .option("-v", "--version", "Override version");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
@@ -53,7 +58,9 @@ describe("version", () => {
     });
   });
   describe("custom flags", () => {
-    const cmd = clee("clee").version("1.0.0", "-g", "--get-version", "Get version");
+    const cmd = clee("clee")
+      .cwd()
+      .version("1.0.0", "-g", "--get-version", "Get version");
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({

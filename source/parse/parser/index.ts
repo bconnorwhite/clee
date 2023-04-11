@@ -86,17 +86,6 @@ export type Path = {
 };
 
 /**
- * Set the current working directory.
- * Always returns the current working directory.
- */
-export function parseCWD(string: string | undefined): string {
-  if(string !== undefined) {
-    process.chdir(string);
-  }
-  return process.cwd();
-}
-
-/**
  * Parse a path from a string.
  * Valid input formats include:
  * ```

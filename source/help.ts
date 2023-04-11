@@ -1,6 +1,7 @@
 import { Command, CommandProperties, getCommand, Commands } from "./command.js";
 import { Arguments, wrapParameter } from "./input/index.js";
 import { Option, Options } from "./input/options/index.js";
+import { isShortFlag } from "./parse/flags.js";
 import { ShortFlag, LongFlag } from "./parse/index.js";
 import { isActiveVersionOption } from "./version.js";
 
@@ -60,6 +61,9 @@ function getArgumentParameters<N extends string, A extends Arguments, O extends 
  */
 function getOptionParameters<N extends string, A extends Arguments, O extends Options, R, S extends Commands>(properties: CommandProperties<N, A, O, R, S>): [string, string][] {
   const options = Object.values<Partial<Option<LongFlag, unknown>>>(properties.options ?? {});
+  if(properties.cwd?.shortFlag || properties.cwd?.longFlag) {
+    options.push(properties.cwd as Option<LongFlag, unknown>);
+  }
   if(isActiveVersionOption(properties.version)) {
     options.push(properties.version);
   }
@@ -151,9 +155,18 @@ export function getHelpFn<N extends string, A extends Arguments, O extends Optio
   properties: CommandProperties<N, A, O, R, S>
 ) {
   function helpFn(): Command<N, A, O, R, S>;
-  function helpFn(shortFlag: ShortFlag, longFlag: LongFlag, description: string): Command<N, A, O, R, S>;
-  function helpFn(shortFlag?: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S> {
-    if(shortFlag !== undefined) {
+  function helpFn(shortFlag: ShortFlag, longFlag?: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function helpFn(longFlag: LongFlag, description?: string): Command<N, A, O, R, S>;
+  function helpFn(a?: ShortFlag | LongFlag, b?: LongFlag | string, c?: string): Command<N, A, O, R, S> {
+    if(a === undefined) {
+      return getCommand({
+        ...properties,
+        help: undefined
+      });
+    } else {
+      const shortFlag = isShortFlag(a) ? a : undefined;
+      const longFlag = isShortFlag(a) ? b as LongFlag : a;
+      const description = isShortFlag(a) ? c : b as string | undefined;
       return getCommand({
         ...properties,
         help: {
@@ -161,11 +174,6 @@ export function getHelpFn<N extends string, A extends Arguments, O extends Optio
           longFlag,
           description
         }
-      });
-    } else {
-      return getCommand({
-        ...properties,
-        help: undefined
       });
     }
   }

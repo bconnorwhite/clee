@@ -6,6 +6,7 @@ describe("argument", () => {
   describe("default parser", () => {
     const cmd = clee("clee")
       .argument("[name]", "Name")
+      .cwd()
       .action((name) => name);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
@@ -34,7 +35,7 @@ describe("argument", () => {
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
-        message: "Usage: clee [name]\n\nOptions:\n  -h, --help  Display help for command"
+        message: "Usage: clee [name]\n\nOptions:\n      --cwd   A relative or absolute path to the working directory.\n  -h, --help  Display help for command"
       });
     });
     test("action", async () => {
@@ -72,7 +73,7 @@ describe("argument", () => {
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
-        message: "Usage: clee [first] [list...]\n\nOptions:\n  -h, --help  Display help for command"
+        message: "Usage: clee [first] [list...]\n\nOptions:\n      --cwd   A relative or absolute path to the working directory.\n  -h, --help  Display help for command"
       });
     });
     test("action", async () => {
@@ -146,7 +147,7 @@ describe("requiredArgument", () => {
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
-        message: "Usage: clee <name>\n\nOptions:\n  -h, --help  Display help for command"
+        message: "Usage: clee <name>\n\nOptions:\n      --cwd   A relative or absolute path to the working directory.\n  -h, --help  Display help for command"
       });
     });
     test("is required", async () => {
@@ -155,7 +156,7 @@ describe("requiredArgument", () => {
     });
   });
   describe("with description", () => {
-    const cmd = clee("clee").argument("<name>", "Description");
+    const cmd = clee("clee").argument("<name>", "Description").cwd();
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({

@@ -9,6 +9,11 @@ export default function clee<N extends string>(name: N): Command<N> {
     commands: undefined,
     arguments: [] as [],
     options: undefined,
+    cwd: {
+      shortFlag: undefined,
+      longFlag: "--cwd",
+      description: "A relative or absolute path to the working directory."
+    },
     help: {
       shortFlag: "-h",
       longFlag: "--help",
@@ -43,7 +48,6 @@ export {
   parseJSON,
   parseDate,
   parseURL,
-  parseCWD,
   parsePath,
   parseFile,
   parseDirectory,

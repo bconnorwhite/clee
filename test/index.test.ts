@@ -3,7 +3,7 @@ import chalk from "chalk";
 import clee from "../source/index.js";
 
 describe("name", () => {
-  const cmd = clee("clee").action(() => {
+  const cmd = clee("clee").cwd().action(() => {
     return true;
   });
   test("usage", async () => {
@@ -30,7 +30,7 @@ describe("name", () => {
 });
 
 describe("title", () => {
-  const cmd = clee("clee").title({ font: "Term" });
+  const cmd = clee("clee").cwd().title({ font: "Term" });
   test("usage", async () => {
     const result = await cmd.parse(["-h"]);
     expect(result).toStrictEqual({
@@ -41,6 +41,7 @@ describe("title", () => {
 
 describe("description", () => {
   const cmd = clee("clee")
+    .cwd()
     .description("Test Description");
   test("usage", async () => {
     const result = await cmd.parse(["-h"]);

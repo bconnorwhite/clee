@@ -48,6 +48,7 @@ describe("complex", () => {
     .argument("[argument2]", "Description")
     .option("-o", "--option1", "<value>", "Description")
     .option("-p", "--opt2", "Description")
+    .cwd()
     .action((arg1, arg2, options) => {
       return { arg1, arg2, options };
     });

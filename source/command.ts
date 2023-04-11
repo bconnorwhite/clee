@@ -13,6 +13,7 @@ import { Formatter, getFormatFn } from "./format.js";
 import { getRunFn } from "./run.js";
 import { getParseFn } from "./parse/index.js";
 import { getHelpFn } from "./help.js";
+import { getCWDFn } from "./cwd.js";
 import { getVersionFn, VersionOption } from "./version.js";
 
 export type Commands = Record<string, unknown> | undefined;
@@ -51,6 +52,7 @@ export interface Command<N extends string=string, A extends Arguments=[], O exte
   option: ReturnType<typeof getOptionFn<N, A, O, R, S>>;
   options: ReturnType<typeof getOptionsFn<N, A, O, R, S>>;
   // Additional options
+  cwd: ReturnType<typeof getCWDFn<N, A, O, R, S>>;
   help: ReturnType<typeof getHelpFn<N, A, O, R, S>>;
   version: ReturnType<typeof getVersionFn<N, A, O, R, S>>;
   // Calling the command
@@ -73,8 +75,9 @@ export type CommandProperties<N extends string, A extends Arguments, O extends O
   arguments: ArgumentsProperty<A>;
   options: OptionsProperty<O> | undefined;
   // Additional options
-  help: Partial<OptionSkin> | undefined;
   version: VersionOption;
+  help: Partial<OptionSkin> | undefined;
+  cwd: Partial<OptionSkin> | undefined;
   // The action and formatter
   action: Action<A, O, R> | undefined;
   format: Formatter<R, O>;
@@ -126,8 +129,9 @@ export function getCommand<N extends string, A extends Arguments=[], O extends O
   command.option = getOptionFn(properties);
   command.options = getOptionsFn(properties);
   // Additional options
-  command.help = getHelpFn(properties);
   command.version = getVersionFn(properties);
+  command.help = getHelpFn(properties);
+  command.cwd = getCWDFn(properties);
   // Calling the command
   command.action = getActionFn(properties);
   command.format = getFormatFn(properties);
