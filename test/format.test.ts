@@ -1,5 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import chalk from "chalk";
+import { formatTable } from "../source/format.js";
 import clee, { formatDefault, parseBoolean } from "../source/index.js";
 
 describe("formatDefault", () => {
@@ -53,5 +54,19 @@ describe("format output async", () => {
     expect(result).toStrictEqual({
       message: "Result: true"
     });
+  });
+});
+
+describe("format table", () => {
+  test("basic", () => {
+    const result = formatTable([
+      { header_name: "test", int: "1", float: "1.1", dollar: "$12.12" },
+      { header_name: "testing a longer string", int: "2", float: "1.0", dollar: "$1.10" }
+    ]);
+    expect(result).toBe([
+      "Header Name             Int Float Dollar",
+      "test                      1   1.1 $12.12",
+      "testing a longer string   2   1.0  $1.10"
+    ].join("\n"));
   });
 });

@@ -1,6 +1,16 @@
 import enquirer from "enquirer";
 import { ParserOptions } from "./index.js";
 
+// Returns true if value matches Int, Float or Dollars.
+export function isNumeric(value: string): boolean {
+  try {
+    parseDollars(value);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 /**
  * Parse a number from a string.
  */
