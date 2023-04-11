@@ -1,6 +1,7 @@
 import { resolve, relative, parse, ParsedPath } from "node:path";
 import { Dirent } from "node:fs";
 import fs from "node:fs/promises";
+import { parseCSV } from "./string.js";
 
 export type ParserOptions = {
   name: string;
@@ -102,6 +103,18 @@ export function parsePath(string: string | undefined): Path | undefined {
       relative: relative(process.cwd(), absolute),
       ...parse(absolute)
     };
+  } else {
+    return undefined;
+  }
+}
+
+/**
+ * Parse a list of paths from a CSV string.
+ */
+export function parsePathCSV(string: string | undefined): Path[] | undefined {
+  if(string !== undefined) {
+    const csv = parseCSV(string);
+    return csv?.map((value) => parsePath(value)).filter((value): value is Path => value !== undefined);
   } else {
     return undefined;
   }
