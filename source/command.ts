@@ -72,7 +72,7 @@ export type CommandProperties<N extends string, A extends Arguments, O extends O
   help: Partial<OptionSkin>;
   version: VersionOption;
   // The action and formatter
-  action: Action<A, O, R>;
+  action: Action<A, O, R> | undefined;
   format: Formatter<R, O>;
 };
 
@@ -103,7 +103,7 @@ export function getCommandFn<N extends string, A extends Arguments, O extends Op
 export function getCommand<N extends string, A extends Arguments=[], O extends Options=Options, R=void, S extends Commands=Record<string, never>>(
   properties: CommandProperties<N, A, O, R, S>
 ): Command<N, A, O, R, S> {
-  const command = properties.action as Command<N, A, O, R, S>;
+  const command = (properties.action ?? (() => {})) as Command<N, A, O, R, S>;
   // Base Settings
   Object.defineProperty(command, "name", { value: getNameFn(properties) }); // This is super hacky but I'm gonna leave it until something breaks
   command.title = getTitleFn(properties);

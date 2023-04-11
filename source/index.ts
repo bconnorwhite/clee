@@ -4,7 +4,7 @@ import { formatDefault } from "./format.js";
 export default function clee<N extends string>(name: N): Command<N> {
   return getCommand({
     name,
-    action: () => {},
+    action: undefined,
     format: formatDefault,
     commands: undefined,
     arguments: [] as [],

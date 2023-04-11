@@ -18,7 +18,7 @@ export function getActionFn<N extends string, A extends Arguments, O extends Opt
   ): C extends [Action<A, O, infer R2>] ? Command<N, A, O, R2, S> : Action<A, O, R> {
     const action = args[0];
     if(action === undefined) {
-      return properties.action.bind({}) as C extends [Action<A, O, infer R2>] ? Command<N, A, O, R2, S> : Action<A, O, R>;
+      return properties.action?.bind({}) as C extends [Action<A, O, infer R2>] ? Command<N, A, O, R2, S> : Action<A, O, R>;
     } else {
       return getCommand({
         ...properties,

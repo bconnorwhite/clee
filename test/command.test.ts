@@ -34,3 +34,22 @@ describe("subcommand", () => {
     expect(result).toStrictEqual({ message: "ParentTrue" });
   });
 });
+
+describe("no action", () => {
+  const sub = clee("sub")
+    .argument("[arg1]", parseBoolean)
+    .action((arg1) => {
+      return arg1;
+    })
+    .format((result) => {
+      return result ? "SubTrue" : "SubFalse";
+    });
+  const cmd = clee("clee")
+    .command(sub);
+  test("usage", async () => {
+    const result = await cmd.parse();
+    expect(result).toStrictEqual({
+      message: "Usage: clee [command]\n\nOptions:\n  -h, --help  Display help for command\n\nCommands:\n  sub [arg1]"
+    });
+  });
+});

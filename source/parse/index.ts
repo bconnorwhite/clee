@@ -1,5 +1,4 @@
 /* eslint-disable max-depth */
-import { toCamelCase } from "typed-case";
 import { Arguments, Input, wrapParameter } from "../input/index.js";
 import { Commands, CommandProperties, Command } from "../command.js";
 import { Option, Options } from "../input/options/index.js";
@@ -170,13 +169,6 @@ export function getParseFn<N extends string, A extends Arguments, O extends Opti
     if(subcommand && properties.commands?.[subcommand]) {
       // Run the subcommand
       return (properties.commands[subcommand] as Command).parse(array.slice(1));
-    } else if(hasHelpFlag(properties, array)) {
-      // Print the help message
-      const help = getHelp(properties);
-      if(parseOptions?.silent !== true) {
-        console.info(help);
-      }
-      return { message: help };
     } else if(isActiveVersionOption(properties.version) && hasVersionFlag(properties, array)) {
       // Print the version message
       const version = getVersion(properties);
@@ -190,6 +182,13 @@ export function getParseFn<N extends string, A extends Arguments, O extends Opti
         console.error(error);
         return error;
       }
+    } else if(hasHelpFlag(properties, array) || properties.action === undefined) {
+      // Print the help message
+      const help = getHelp(properties);
+      if(parseOptions?.silent !== true) {
+        console.info(help);
+      }
+      return { message: help };
     } else {
       // Run the command
       try {

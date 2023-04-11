@@ -28,7 +28,9 @@ describe("help", () => {
     });
   });
   describe("conflicting with help both flags", () => {
-    const cmd = clee("clee").option("-h", "--help", "Description");
+    const cmd = clee("clee")
+      .option("-h", "--help", "Description")
+      .action(() => {});
     test("usage", async () => {
       const result = await cmd.parse(["--help"]);
       expect(result).toStrictEqual({

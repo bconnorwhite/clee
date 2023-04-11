@@ -105,7 +105,9 @@ describe("option", () => {
 
 describe("requiredOption", () => {
   describe("boolean", () => {
-    const cmd = clee("clee").option("-f", "--flag", "<value>", "Description");
+    const cmd = clee("clee")
+      .option("-f", "--flag", "<value>", "Description")
+      .action((options) => options.flag);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({

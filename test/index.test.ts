@@ -53,7 +53,7 @@ describe("description", () => {
 describe("action", () => {
   const cmd = clee("clee").action(() => {
     // eslint-disable-next-line no-throw-literal
-    throw"Test Error";
+    throw "Test Error";
   });
   test("action", async () => {
     try {

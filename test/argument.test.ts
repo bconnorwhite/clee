@@ -4,7 +4,9 @@ import clee, { parseString } from "../source/index.js";
 
 describe("argument", () => {
   describe("default parser", () => {
-    const cmd = clee("clee").argument("[name]", "Name");
+    const cmd = clee("clee")
+      .argument("[name]", "Name")
+      .action((name) => name);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
@@ -138,7 +140,9 @@ describe("optionalArguments", () => {
 
 describe("requiredArgument", () => {
   describe("without description", () => {
-    const cmd = clee("clee").argument("<name>");
+    const cmd = clee("clee")
+      .argument("<name>")
+      .action((name) => name);
     test("usage", async () => {
       const result = await cmd.parse(["-h"]);
       expect(result).toStrictEqual({
